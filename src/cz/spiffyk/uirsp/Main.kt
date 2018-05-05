@@ -1,5 +1,6 @@
 package cz.spiffyk.uirsp
 
+import cz.spiffyk.uirsp.generation.NGramGenerator
 import cz.spiffyk.uirsp.tweet.TweetsCsvParser
 import cz.spiffyk.uirsp.util.CommandLineArgs
 import java.io.File
@@ -19,7 +20,6 @@ const val HELP_TEXT =
  * @param args Command line arguments (parsed by [CommandLineArgs])
  */
 fun main(args: Array<String>) {
-    val parser = TweetsCsvParser()
     try {
         val argsDto = CommandLineArgs(args)
 
@@ -29,9 +29,12 @@ fun main(args: Array<String>) {
         }
 
         val file = determineFile(argsDto)
-        val tweets = parser.parseFile(file)
+        val tweets = TweetsCsvParser.parseFile(file)
 
         println("Parsed ${tweets.size} tweets.")
+
+        println("\n\n\nBoW:\n${NGramGenerator.generate(tweets[0])}")
+        println("\n\n\n3-gram:\n${NGramGenerator.generate(tweets[0], 3)}")
     } catch (e: CommandLineArgs.InvalidArgsException) {
         System.err.println(e.message)
         println(HELP_TEXT)

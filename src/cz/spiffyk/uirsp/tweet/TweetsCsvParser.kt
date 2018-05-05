@@ -9,16 +9,14 @@ import java.util.*
 /**
  * A class for parsing CSV files containing tweets.
  */
-class TweetsCsvParser {
+object TweetsCsvParser {
 
-    companion object {
-        private const val BARE_TWEET_VALUE_COUNT: Int = 4
-        private const val ANNOTATED_TWEET_VALUE_COUNT: Int = 6
+    private const val BARE_TWEET_VALUE_COUNT: Int = 4
+    private const val ANNOTATED_TWEET_VALUE_COUNT: Int = 6
 
-        private const val DATE_TIME_PATTERN: String = "E MMM d HH:mm:ss zz y"
-        private val DATE_TIME_FORMATTER: DateTimeFormatter =
-                DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)
-    }
+    private const val DATE_TIME_PATTERN: String = "E MMM d HH:mm:ss zz y"
+    private val DATE_TIME_FORMATTER: DateTimeFormatter =
+            DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)
 
     fun parseFile(file: File,
                   valueSeparator: Char = ';'): List<Tweet> {

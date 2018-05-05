@@ -1,4 +1,4 @@
-package cz.spiffyk.uirsp.ngram
+package cz.spiffyk.uirsp.generation
 
 import cz.spiffyk.uirsp.tweet.Tweet
 import cz.spiffyk.uirsp.tweet.TweetVector
