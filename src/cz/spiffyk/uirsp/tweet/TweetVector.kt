@@ -1,11 +1,11 @@
-package cz.spiffyk.uirsp.vector
+package cz.spiffyk.uirsp.tweet
 
 import cz.spiffyk.uirsp.util.InstanceCache
 
 /**
- * A word vector class.
+ * A tweet vector representation class. Any non-existent members in this vector are treated as zero.
  */
-class WordVector(inputMap: MutableMap<String, Double>) {
+class TweetVector(inputMap: MutableMap<String, Double>) {
 
     companion object {
         val wordCache = InstanceCache<String>()
@@ -17,7 +17,7 @@ class WordVector(inputMap: MutableMap<String, Double>) {
          * @param v2 a word vector
          * @return the distance between the word vectors
          */
-        fun dist(v1: WordVector, v2: WordVector): Double {
+        fun dist(v1: TweetVector, v2: TweetVector): Double {
             return (v1 - v2).length
         }
     }
@@ -57,8 +57,8 @@ class WordVector(inputMap: MutableMap<String, Double>) {
      * @param v the other word vector
      * @return the distance between the word vectors
      */
-    fun dist(v: WordVector): Double {
-        return WordVector.dist(this, v)
+    fun dist(v: TweetVector): Double {
+        return dist(this, v)
     }
 
 
@@ -72,28 +72,28 @@ class WordVector(inputMap: MutableMap<String, Double>) {
 
     operator fun unaryPlus() = this
 
-    operator fun unaryMinus(): WordVector {
+    operator fun unaryMinus(): TweetVector {
         val newMap = HashMap<String, Double>()
         map.forEach {
             newMap.put(it.key, -it.value)
         }
-        return WordVector(newMap)
+        return TweetVector(newMap)
     }
 
-    operator fun plus(v: WordVector): WordVector {
+    operator fun plus(v: TweetVector): TweetVector {
         val newMap = HashMap<String, Double>()
         getKeySet(v).forEach {
             newMap[it] = this[it] + v[it]
         }
-        return WordVector(newMap)
+        return TweetVector(newMap)
     }
 
-    operator fun minus(v: WordVector): WordVector {
+    operator fun minus(v: TweetVector): TweetVector {
         val newMap = HashMap<String, Double>()
         getKeySet(v).forEach {
             newMap[it] = this[it] - v[it]
         }
-        return WordVector(newMap)
+        return TweetVector(newMap)
     }
 
 
@@ -102,7 +102,7 @@ class WordVector(inputMap: MutableMap<String, Double>) {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as WordVector
+        other as TweetVector
 
         if (map != other.map) return false
 
@@ -113,6 +113,10 @@ class WordVector(inputMap: MutableMap<String, Double>) {
         return map.hashCode()
     }
 
+    override fun toString(): String {
+        return map.toString()
+    }
+
 
 
     /**
@@ -120,11 +124,36 @@ class WordVector(inputMap: MutableMap<String, Double>) {
      *
      * @return [Set] of keys
      */
-    private fun getKeySet(v: WordVector): Set<String> {
+    private fun getKeySet(v: TweetVector): Set<String> {
         val keySet = mutableSetOf<String>()
         keySet.addAll(map.keys)
         keySet.addAll(v.map.keys)
         return keySet
     }
 
+
+    /**
+     * Builder class of [TweetVector].
+     */
+    class Builder {
+        val map = HashMap<String, Double>()
+
+        /**
+         * Adds the specified `x` to the `string` member of the [TweetVector] to be built.
+         *
+         * @param string the ID of the member
+         * @param x the value to add (default: 1.0)
+         */
+        fun add(string: String, x: Double = 1.0): Builder {
+            map[string] = (map[string] ?: 0.0) + x
+            return this
+        }
+
+        /**
+         * Builds the [TweetVector].
+         */
+        fun build(): TweetVector {
+            return TweetVector(map)
+        }
+    }
 }
