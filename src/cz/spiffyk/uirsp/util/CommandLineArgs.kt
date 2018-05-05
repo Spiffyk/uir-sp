@@ -3,17 +3,19 @@ package cz.spiffyk.uirsp.util
 /**
  * A class representing parsed command line options.
  *
- * @property isValid `false` when an unknown command line switch has been passed; otherwise `true`
  * @property help Whether program help should be shown
  */
-data class CommandLineArgs(var isValid: Boolean = true,
+data class CommandLineArgs(var file: String? = null,
                            var help: Boolean = false) {
 
     /**
      * Parses command line arguments to from a [CommandLineArgs] object.
      *
      * @param args Command line arguments as passed to a `main(args: Array<String>)` entry point
+     *
+     * @throws InvalidArgsException when command line arguments are invalid
      */
+    @Throws(InvalidArgsException::class)
     constructor(args: Array<String>) : this() {
         for(arg in args) {
             if (arg.startsWith("-")) {
@@ -22,15 +24,21 @@ data class CommandLineArgs(var isValid: Boolean = true,
                         help = true
                     }
                     else -> {
-                        isValid = false
-                        System.err.println("Unknown switch '$arg'")
+                        throw InvalidArgsException("Unknown switch '$arg'")
                     }
                 }
             } else {
-                isValid = false
-                System.err.println("Invalid argument '$arg'")
+                if (file !== null) {
+                    throw InvalidArgsException("Only one input file is allowed!")
+                }
+                file = arg
             }
         }
     }
 
+    /**
+     * Thrown when CLI arguments are invalid.
+     */
+    class InvalidArgsException(override var message: String? = null, override var cause: Throwable? = null):
+            Exception(message, cause)
 }

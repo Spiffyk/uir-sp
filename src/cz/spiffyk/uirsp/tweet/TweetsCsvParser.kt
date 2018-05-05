@@ -22,6 +22,8 @@ class TweetsCsvParser {
 
     fun parseFile(file: File,
                   valueSeparator: Char = ';'): List<Tweet> {
+        println("Parsing file '${file.absolutePath}' ...")
+
         val result = ArrayList<Tweet>()
         var lineNo = 0
 
@@ -62,7 +64,7 @@ class TweetsCsvParser {
     }
 
     /**
-     * Thrown when @
+     * Thrown when parser fails.
      */
     class ParserException(override var message: String? = null, override var cause: Throwable? = null):
             Exception(message, cause)
