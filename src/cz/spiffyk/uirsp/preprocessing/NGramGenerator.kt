@@ -47,12 +47,14 @@ object NGramGenerator {
     private fun generateNGram(tweet: Tweet, n: Int): TweetVector {
         val split = tweet.splitWords()
         val builder = TweetVector.Builder()
-        for (i in 0..(split.size - n)) {
-            val sb = StringBuilder(split[i])
-            for (j in 1..(n - 1)) {
-                sb.append(" ${split[i + j]}")
+        if (split.size >= n) {
+            for (i in 0..(split.size - n)) {
+                val sb = StringBuilder(split[i])
+                for (j in 1..(n - 1)) {
+                    sb.append(" ${split[i + j]}")
+                }
+                builder.add(sb.toString())
             }
-            builder.add(sb.toString())
         }
         return builder.build()
     }
