@@ -1,4 +1,4 @@
-package cz.spiffyk.uirsp.generation
+package cz.spiffyk.uirsp.preprocessing
 
 import cz.spiffyk.uirsp.tweet.Tweet
 import cz.spiffyk.uirsp.tweet.TweetVector
@@ -36,7 +36,7 @@ object NGramGenerator {
 
 
     private fun generateBagOfWords(tweet: Tweet): TweetVector {
-        val split = splitWords(tweet)
+        val split = tweet.splitWords()
         val builder = TweetVector.Builder()
         split.forEach {
             builder.add(it)
@@ -45,7 +45,7 @@ object NGramGenerator {
     }
 
     private fun generateNGram(tweet: Tweet, n: Int): TweetVector {
-        val split = splitWords(tweet)
+        val split = tweet.splitWords()
         val builder = TweetVector.Builder()
         for (i in 0..(split.size - n)) {
             val sb = StringBuilder(split[i])
@@ -55,11 +55,5 @@ object NGramGenerator {
             builder.add(sb.toString())
         }
         return builder.build()
-    }
-
-    private fun splitWords(tweet: Tweet): List<String> {
-        return tweet.body.split(Regex("""[,.!?;\s]+""")).stream()
-                .filter { !it.isEmpty() }
-                .collect(Collectors.toList())
     }
 }

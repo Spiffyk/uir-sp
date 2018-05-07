@@ -5,7 +5,7 @@ import cz.spiffyk.uirsp.util.InstanceCache
 /**
  * A tweet vector representation class. Any non-existent members in this vector are treated as zero.
  */
-class TweetVector(inputMap: MutableMap<String, Double>) {
+class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<String, Double>> {
 
     companion object {
         val wordCache = InstanceCache<String>()
@@ -61,6 +61,25 @@ class TweetVector(inputMap: MutableMap<String, Double>) {
         return dist(this, v)
     }
 
+    /**
+     * Calculates the [Hadamard product](https://en.wikipedia.org/wiki/Hadamard_product_%28matrices%29) of this word
+     * vector and the specified word vector.
+     *
+     * @param v the other word vector
+     *
+     * @return the Hadamard product of this word vector and the specified word vector
+     */
+    fun hadamard(v: TweetVector): TweetVector {
+        val newMap = HashMap<String, Double>()
+        getKeySet(v).forEach {
+            val result = this[it] * v[it]
+            if (result != 0.0) {
+                newMap[it] = result
+            }
+        }
+        return TweetVector(newMap)
+    }
+
 
 
     /**
@@ -96,7 +115,30 @@ class TweetVector(inputMap: MutableMap<String, Double>) {
         return TweetVector(newMap)
     }
 
+    operator fun times(x: Double): TweetVector {
+        val newMap = HashMap<String, Double>()
+        map.forEach {
+            newMap[it.key] = it.value * x
+        }
+        return TweetVector(newMap)
+    }
 
+    operator fun div(x: Double): TweetVector {
+        val newMap = HashMap<String, Double>()
+        map.forEach {
+            newMap[it.key] = it.value / x
+        }
+        return TweetVector(newMap)
+    }
+
+    operator fun times(x: Int): TweetVector = this * x.toDouble()
+
+    operator fun div(x: Int): TweetVector = this / x.toDouble()
+
+
+    override fun iterator(): Iterator<Map.Entry<String, Double>> {
+        return map.iterator()
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

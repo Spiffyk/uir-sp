@@ -1,6 +1,7 @@
 package cz.spiffyk.uirsp
 
-import cz.spiffyk.uirsp.generation.NGramGenerator
+import cz.spiffyk.uirsp.preprocessing.NGramGenerator
+import cz.spiffyk.uirsp.preprocessing.TfIdfGenerator
 import cz.spiffyk.uirsp.tweet.TweetsCsvParser
 import cz.spiffyk.uirsp.util.CommandLineArgs
 import java.io.File
@@ -35,6 +36,7 @@ fun main(args: Array<String>) {
 
         println("\n\n\nBoW:\n${NGramGenerator.generate(tweets[0])}")
         println("\n\n\n3-gram:\n${NGramGenerator.generate(tweets[0], 3)}")
+        println("\n\n\ntf-idf:\n${TfIdfGenerator.generate(tweets)[0]}")
     } catch (e: CommandLineArgs.InvalidArgsException) {
         System.err.println(e.message)
         println(HELP_TEXT)
