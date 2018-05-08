@@ -1,15 +1,16 @@
 package cz.spiffyk.uirsp.preprocessing
 
 import cz.spiffyk.uirsp.tweet.Tweet
-import cz.spiffyk.uirsp.tweet.TweetVector
+import cz.spiffyk.uirsp.tweet.TextVector
+import cz.spiffyk.uirsp.tweet.TweetWithVector
 
 object TfIdfGenerator {
 
-    fun generate(tweets: List<Tweet>): List<TweetVector> {
-        val ocVectorBuilder = TweetVector.Builder()
-        val tfVectors = ArrayList<TweetVector>()
+    fun generate(tweets: List<Tweet>): List<TweetWithVector> {
+        val ocVectorBuilder = TextVector.Builder()
+        val tfVectors = ArrayList<TweetWithVector>()
         tweets.forEach {
-            val tfVectorBuilder = TweetVector.Builder()
+            val tfVectorBuilder = TextVector.Builder()
             val split = it.splitWords()
             split.forEach {
                 tfVectorBuilder.add(it)
@@ -17,23 +18,23 @@ object TfIdfGenerator {
             tfVectorBuilder.map.forEach {
                 ocVectorBuilder.add(it.key)
             }
-            tfVectors.add(tfVectorBuilder.build() / split.size)
+            tfVectors.add(TweetWithVector(it, tfVectorBuilder.build() / split.size))
         }
 
         val idfVector = generateIdf(ocVectorBuilder.build(), tweets.size)
-        val result = ArrayList<TweetVector>()
+        val result = ArrayList<TweetWithVector>()
         tfVectors.forEach {
-            result.add(it.hadamard(idfVector))
+            result.add(TweetWithVector(it.tweet, it.vector.hadamard(idfVector)))
         }
         return result
     }
 
-    private fun generateIdf(ocVector: TweetVector, tweetCount: Int): TweetVector {
+    private fun generateIdf(ocVector: TextVector, tweetCount: Int): TextVector {
         val result = HashMap<String, Double>()
         ocVector.forEach {
             result[it.key] = Math.log10(tweetCount / (1.0 + it.value))
         }
-        return TweetVector(result)
+        return TextVector(result)
     }
 
 }

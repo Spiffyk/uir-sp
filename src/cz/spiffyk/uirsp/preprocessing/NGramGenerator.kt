@@ -1,15 +1,15 @@
 package cz.spiffyk.uirsp.preprocessing
 
 import cz.spiffyk.uirsp.tweet.Tweet
-import cz.spiffyk.uirsp.tweet.TweetVector
-import java.util.stream.Collectors
+import cz.spiffyk.uirsp.tweet.TextVector
+import cz.spiffyk.uirsp.tweet.TweetWithVector
 
 /**
  * A Bag-of-words / N-gram generator object.
  */
 object NGramGenerator {
 
-    fun generate(tweet: Tweet, n: Int = 1): TweetVector {
+    fun generate(tweet: Tweet, n: Int = 1): TweetWithVector {
         if (n <= 0) {
             throw IllegalArgumentException("n must be a positive integer")
         }
@@ -21,12 +21,12 @@ object NGramGenerator {
         }
     }
 
-    fun generate(tweets: Iterable<Tweet>, n: Int = 1): List<TweetVector> {
+    fun generate(tweets: Iterable<Tweet>, n: Int = 1): List<TweetWithVector> {
         if (n <= 0) {
             throw IllegalArgumentException("n must be a positive integer")
         }
 
-        val result = ArrayList<TweetVector>()
+        val result = ArrayList<TweetWithVector>()
         tweets.forEach {
             result.add(generate(it, n))
         }
@@ -35,18 +35,18 @@ object NGramGenerator {
 
 
 
-    private fun generateBagOfWords(tweet: Tweet): TweetVector {
+    private fun generateBagOfWords(tweet: Tweet): TweetWithVector {
         val split = tweet.splitWords()
-        val builder = TweetVector.Builder()
+        val builder = TextVector.Builder()
         split.forEach {
             builder.add(it)
         }
-        return builder.build()
+        return TweetWithVector(tweet, builder.build())
     }
 
-    private fun generateNGram(tweet: Tweet, n: Int): TweetVector {
-        val split = tweet.splitWords()
-        val builder = TweetVector.Builder()
+    private fun generateNGram(tweet: Tweet, n: Int): TweetWithVector {
+        val split = tweet.splitWords(applyFilter = false)
+        val builder = TextVector.Builder()
         if (split.size >= n) {
             for (i in 0..(split.size - n)) {
                 val sb = StringBuilder(split[i])
@@ -56,6 +56,6 @@ object NGramGenerator {
                 builder.add(sb.toString())
             }
         }
-        return builder.build()
+        return TweetWithVector(tweet, builder.build())
     }
 }

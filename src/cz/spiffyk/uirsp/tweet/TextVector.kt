@@ -3,9 +3,9 @@ package cz.spiffyk.uirsp.tweet
 import cz.spiffyk.uirsp.util.InstanceCache
 
 /**
- * A tweet vector representation class. Any non-existent members in this vector are treated as zero.
+ * A text vector representation class. Any non-existent members in this vector are treated as zero.
  */
-class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<String, Double>> {
+class TextVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<String, Double>> {
 
     companion object {
         val wordCache = InstanceCache<String>()
@@ -17,7 +17,7 @@ class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Str
          * @param v2 a word vector
          * @return the distance between the word vectors
          */
-        fun dist(v1: TweetVector, v2: TweetVector): Double {
+        fun dist(v1: TextVector, v2: TextVector): Double {
             return (v1 - v2).length
         }
     }
@@ -57,7 +57,7 @@ class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Str
      * @param v the other word vector
      * @return the distance between the word vectors
      */
-    fun dist(v: TweetVector): Double {
+    fun dist(v: TextVector): Double {
         return dist(this, v)
     }
 
@@ -69,7 +69,7 @@ class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Str
      *
      * @return the Hadamard product of this word vector and the specified word vector
      */
-    fun hadamard(v: TweetVector): TweetVector {
+    fun hadamard(v: TextVector): TextVector {
         val newMap = HashMap<String, Double>()
         getKeySet(v).forEach {
             val result = this[it] * v[it]
@@ -77,7 +77,7 @@ class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Str
                 newMap[it] = result
             }
         }
-        return TweetVector(newMap)
+        return TextVector(newMap)
     }
 
 
@@ -91,49 +91,49 @@ class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Str
 
     operator fun unaryPlus() = this
 
-    operator fun unaryMinus(): TweetVector {
+    operator fun unaryMinus(): TextVector {
         val newMap = HashMap<String, Double>()
         map.forEach {
             newMap.put(it.key, -it.value)
         }
-        return TweetVector(newMap)
+        return TextVector(newMap)
     }
 
-    operator fun plus(v: TweetVector): TweetVector {
+    operator fun plus(v: TextVector): TextVector {
         val newMap = HashMap<String, Double>()
         getKeySet(v).forEach {
             newMap[it] = this[it] + v[it]
         }
-        return TweetVector(newMap)
+        return TextVector(newMap)
     }
 
-    operator fun minus(v: TweetVector): TweetVector {
+    operator fun minus(v: TextVector): TextVector {
         val newMap = HashMap<String, Double>()
         getKeySet(v).forEach {
             newMap[it] = this[it] - v[it]
         }
-        return TweetVector(newMap)
+        return TextVector(newMap)
     }
 
-    operator fun times(x: Double): TweetVector {
+    operator fun times(x: Double): TextVector {
         val newMap = HashMap<String, Double>()
         map.forEach {
             newMap[it.key] = it.value * x
         }
-        return TweetVector(newMap)
+        return TextVector(newMap)
     }
 
-    operator fun div(x: Double): TweetVector {
+    operator fun div(x: Double): TextVector {
         val newMap = HashMap<String, Double>()
         map.forEach {
             newMap[it.key] = it.value / x
         }
-        return TweetVector(newMap)
+        return TextVector(newMap)
     }
 
-    operator fun times(x: Int): TweetVector = this * x.toDouble()
+    operator fun times(x: Int): TextVector = this * x.toDouble()
 
-    operator fun div(x: Int): TweetVector = this / x.toDouble()
+    operator fun div(x: Int): TextVector = this / x.toDouble()
 
 
     override fun iterator(): Iterator<Map.Entry<String, Double>> {
@@ -144,7 +144,7 @@ class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Str
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as TweetVector
+        other as TextVector
 
         if (map != other.map) return false
 
@@ -166,7 +166,7 @@ class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Str
      *
      * @return [Set] of keys
      */
-    private fun getKeySet(v: TweetVector): Set<String> {
+    private fun getKeySet(v: TextVector): Set<String> {
         val keySet = mutableSetOf<String>()
         keySet.addAll(map.keys)
         keySet.addAll(v.map.keys)
@@ -175,13 +175,13 @@ class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Str
 
 
     /**
-     * Builder class of [TweetVector].
+     * Builder class of [TextVector].
      */
     class Builder {
         val map = HashMap<String, Double>()
 
         /**
-         * Adds the specified `x` to the `string` member of the [TweetVector] to be built.
+         * Adds the specified `x` to the `string` member of the [TextVector] to be built.
          *
          * @param string the ID of the member
          * @param x the value to add (default: 1.0)
@@ -192,10 +192,10 @@ class TweetVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Str
         }
 
         /**
-         * Builds the [TweetVector].
+         * Builds the [TextVector].
          */
-        fun build(): TweetVector {
-            return TweetVector(map)
+        fun build(): TextVector {
+            return TextVector(map)
         }
     }
 }

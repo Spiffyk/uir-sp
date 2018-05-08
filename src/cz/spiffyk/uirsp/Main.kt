@@ -34,9 +34,11 @@ fun main(args: Array<String>) {
 
         println("Parsed ${tweets.size} tweets.")
 
-        println("\n\n\nBoW:\n${NGramGenerator.generate(tweets[0])}")
-        println("\n\n\n3-gram:\n${NGramGenerator.generate(tweets[0], 3)}")
-        println("\n\n\ntf-idf:\n${TfIdfGenerator.generate(tweets)[0]}")
+        println("\n${tweets[0].body}")
+
+        println("\n\n\nBoW:\n${NGramGenerator.generate(tweets[0]).vector}")
+        println("\n\n\n3-gram:\n${NGramGenerator.generate(tweets[0], 3).vector}")
+        println("\n\n\ntf-idf:\n${TfIdfGenerator.generate(tweets)[0].vector}")
     } catch (e: CommandLineArgs.InvalidArgsException) {
         System.err.println(e.message)
         println(HELP_TEXT)
