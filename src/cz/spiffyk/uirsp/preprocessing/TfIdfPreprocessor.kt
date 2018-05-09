@@ -4,29 +4,31 @@ import cz.spiffyk.uirsp.tweet.Tweet
 import cz.spiffyk.uirsp.tweet.TextVector
 import cz.spiffyk.uirsp.tweet.TweetWithVector
 
-object TfIdfGenerator {
+object TfIdfPreprocessor {
 
-    fun generate(tweets: List<Tweet>): List<TweetWithVector> {
-        val ocVectorBuilder = TextVector.Builder()
+    fun generate(tweets: List<Tweet>): PreprocessResult {
+        val overallCountVectorBuilder = TextVector.Builder()
         val tfVectors = ArrayList<TweetWithVector>()
         tweets.forEach {
             val tfVectorBuilder = TextVector.Builder()
             val split = it.splitWords()
+            // Increment tf value for each word
             split.forEach {
                 tfVectorBuilder.add(it)
             }
-            tfVectorBuilder.map.forEach {
-                ocVectorBuilder.add(it.key)
+            // Increment overall count for each unique word
+            tfVectorBuilder.map.keys.forEach {
+                overallCountVectorBuilder.add(it)
             }
             tfVectors.add(TweetWithVector(it, tfVectorBuilder.build() / split.size))
         }
 
-        val idfVector = generateIdf(ocVectorBuilder.build(), tweets.size)
-        val result = ArrayList<TweetWithVector>()
+        val idfVector = generateIdf(overallCountVectorBuilder.build(), tweets.size)
+        val resultTweets = ArrayList<TweetWithVector>()
         tfVectors.forEach {
-            result.add(TweetWithVector(it.tweet, it.vector.hadamard(idfVector)))
+            resultTweets.add(TweetWithVector(it.tweet, it.vector.hadamard(idfVector)))
         }
-        return result
+        return PreprocessResult(resultTweets, overallCountVectorBuilder.map.keys)
     }
 
     private fun generateIdf(ocVector: TextVector, tweetCount: Int): TextVector {

@@ -7,7 +7,7 @@ import cz.spiffyk.uirsp.tweet.TweetWithVector
 /**
  * A Bag-of-words / N-gram generator object.
  */
-object NGramGenerator {
+object NGramPreprocessor {
 
     fun generate(tweet: Tweet, n: Int = 1): TweetWithVector {
         if (n <= 0) {
@@ -21,16 +21,19 @@ object NGramGenerator {
         }
     }
 
-    fun generate(tweets: Iterable<Tweet>, n: Int = 1): List<TweetWithVector> {
+    fun generate(tweets: Iterable<Tweet>, n: Int = 1): PreprocessResult {
         if (n <= 0) {
             throw IllegalArgumentException("n must be a positive integer")
         }
 
-        val result = ArrayList<TweetWithVector>()
+        val resultTweets = ArrayList<TweetWithVector>()
+        val resultWords = HashSet<String>()
         tweets.forEach {
-            result.add(generate(it, n))
+            val tweet = generate(it, n)
+            resultTweets.add(tweet)
+            resultWords.addAll(tweet.vector.keys)
         }
-        return result
+        return PreprocessResult(resultTweets, resultWords)
     }
 
 

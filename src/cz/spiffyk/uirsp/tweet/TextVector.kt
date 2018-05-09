@@ -49,6 +49,30 @@ class TextVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Stri
         return@lazy Math.sqrt(result)
     }
 
+    /**
+     * Keys of the vector.
+     *
+     * @see Map.keys
+     */
+    val keys
+        get() = map.keys
+
+    /**
+     * Values of the vector.
+     *
+     * @see Map.values
+     */
+    val values
+        get() = map.values
+
+    /**
+     * Key-value entries of the vector.
+     *
+     * @see Map.entries
+     */
+    val entries
+        get() = map.entries
+
 
 
     /**

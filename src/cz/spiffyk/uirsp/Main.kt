@@ -1,7 +1,7 @@
 package cz.spiffyk.uirsp
 
-import cz.spiffyk.uirsp.preprocessing.NGramGenerator
-import cz.spiffyk.uirsp.preprocessing.TfIdfGenerator
+import cz.spiffyk.uirsp.preprocessing.NGramPreprocessor
+import cz.spiffyk.uirsp.preprocessing.TfIdfPreprocessor
 import cz.spiffyk.uirsp.tweet.TweetsCsvParser
 import cz.spiffyk.uirsp.util.CommandLineArgs
 import java.io.File
@@ -32,13 +32,23 @@ fun main(args: Array<String>) {
         val file = determineFile(argsDto)
         val tweets = TweetsCsvParser.parseFile(file)
 
-        println("Parsed ${tweets.size} tweets.")
+        println("Parsed ${tweets.size} tweets.\n\n")
 
-        println("\n${tweets[0].body}")
+        val bowStart = System.currentTimeMillis()
+        val bowResult = NGramPreprocessor.generate(tweets)
+        val bowEnd = System.currentTimeMillis()
+        println("bag-of-words:   ${bowEnd - bowStart} ms")
 
-        println("\n\n\nBoW:\n${NGramGenerator.generate(tweets[0]).vector}")
-        println("\n\n\n3-gram:\n${NGramGenerator.generate(tweets[0], 3).vector}")
-        println("\n\n\ntf-idf:\n${TfIdfGenerator.generate(tweets)[0].vector}")
+        val nGramStart = System.currentTimeMillis()
+        val nGramResult = NGramPreprocessor.generate(tweets, 3)
+        val nGramEnd = System.currentTimeMillis()
+        println("3-gram:         ${nGramEnd - nGramStart} ms")
+
+        val tfIdfStart = System.currentTimeMillis()
+        val tfIdfResult = TfIdfPreprocessor.generate(tweets)
+        val tfIdfEnd = System.currentTimeMillis()
+        println("tf-idf:         ${tfIdfEnd - tfIdfStart} ms")
+
     } catch (e: CommandLineArgs.InvalidArgsException) {
         System.err.println(e.message)
         println(HELP_TEXT)
