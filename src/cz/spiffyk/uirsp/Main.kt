@@ -69,6 +69,6 @@ private fun preprocess(tweets: List<Tweet>, preprocessorType: ArgsDto.Preprocess
 
 private fun classify(preprocessResult: PreprocessResult, classifierType: ArgsDto.ClassifierType): ClassificationResult =
         when(classifierType) {
-            ArgsDto.ClassifierType.K_MEANS -> TODO()
-            ArgsDto.ClassifierType.K_NN -> TODO()
+            ArgsDto.ClassifierType.K_MEANS -> TODO("K-means is not yet implemented")
+            ArgsDto.ClassifierType.K_NN -> TODO("K-NN is not yet implemented")
         }
