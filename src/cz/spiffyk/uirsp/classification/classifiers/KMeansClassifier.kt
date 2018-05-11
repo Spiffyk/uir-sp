@@ -2,7 +2,7 @@ package cz.spiffyk.uirsp.classification.classifiers
 
 import cz.spiffyk.uirsp.classification.ClassificationGroup
 import cz.spiffyk.uirsp.classification.ClassificationResult
-import cz.spiffyk.uirsp.classification.TopicWithProbability
+import cz.spiffyk.uirsp.classification.ClassificationTopic
 import cz.spiffyk.uirsp.preprocess.PreprocessResult
 import cz.spiffyk.uirsp.tweet.EventTopic
 import cz.spiffyk.uirsp.tweet.TextVector
@@ -56,11 +56,13 @@ object KMeansClassifier {
                 topicCountMap[topic] = ((topicCountMap[topic] ?: 0) + 1)
             }
 
-            val topicProbabilityMap = TreeSet<TopicWithProbability>()
+            val topicProbabilityMap = TreeSet<ClassificationTopic>()
             topicCountMap.forEach { topicEntry ->
                 topicProbabilityMap.add(
-                        TopicWithProbability(
-                                topicEntry.key, topicEntry.value.toDouble() / tweets.size.toDouble()))
+                        ClassificationTopic(
+                                eventTopic = topicEntry.key,
+                                probability = topicEntry.value.toDouble() / tweets.size.toDouble(),
+                                count = topicEntry.value))
             }
 
             resultGroups.add(ClassificationGroup(tweets.map { it.tweet }, topicProbabilityMap))
