@@ -1,10 +1,10 @@
 package cz.spiffyk.uirsp
 
 import cz.spiffyk.uirsp.classification.ClassificationResult
-import cz.spiffyk.uirsp.preprocessing.BagOfWordsPreprocessor
-import cz.spiffyk.uirsp.preprocessing.NGramPreprocessor
-import cz.spiffyk.uirsp.preprocessing.PreprocessResult
-import cz.spiffyk.uirsp.preprocessing.TfIdfPreprocessor
+import cz.spiffyk.uirsp.preprocess.preprocessors.BagOfWordsPreprocessor
+import cz.spiffyk.uirsp.preprocess.preprocessors.NGramPreprocessor
+import cz.spiffyk.uirsp.preprocess.PreprocessResult
+import cz.spiffyk.uirsp.preprocess.preprocessors.TfIdfPreprocessor
 import cz.spiffyk.uirsp.tweet.Tweet
 import cz.spiffyk.uirsp.tweet.TweetsCsvParser
 import cz.spiffyk.uirsp.util.ArgsDto
@@ -60,11 +60,11 @@ fun main(rawArgs: Array<String>) {
 private fun preprocess(tweets: List<Tweet>, preprocessorType: ArgsDto.PreprocessorType): PreprocessResult =
         when(preprocessorType) {
             ArgsDto.PreprocessorType.BAG_OF_WORDS ->
-                BagOfWordsPreprocessor.generate(tweets)
+                BagOfWordsPreprocessor.preprocess(tweets)
             ArgsDto.PreprocessorType.N_GRAM ->
-                NGramPreprocessor.generate(tweets, 3)
+                NGramPreprocessor.preprocess(tweets, 3)
             ArgsDto.PreprocessorType.TF_IDF ->
-                TfIdfPreprocessor.generate(tweets)
+                TfIdfPreprocessor.preprocess(tweets)
         }
 
 private fun classify(preprocessResult: PreprocessResult, classifierType: ArgsDto.ClassifierType): ClassificationResult =

@@ -1,5 +1,6 @@
-package cz.spiffyk.uirsp.preprocessing
+package cz.spiffyk.uirsp.preprocess.preprocessors
 
+import cz.spiffyk.uirsp.preprocess.PreprocessResult
 import cz.spiffyk.uirsp.tweet.TextVector
 import cz.spiffyk.uirsp.tweet.Tweet
 import cz.spiffyk.uirsp.tweet.TweetWithVector
@@ -9,7 +10,7 @@ import cz.spiffyk.uirsp.tweet.TweetWithVector
  */
 object BagOfWordsPreprocessor {
 
-    fun generate(tweet: Tweet): TweetWithVector {
+    fun preprocess(tweet: Tweet): TweetWithVector {
         val split = tweet.splitWords()
         val builder = TextVector.Builder()
         split.forEach {
@@ -18,11 +19,11 @@ object BagOfWordsPreprocessor {
         return TweetWithVector(tweet, builder.build())
     }
 
-    fun generate(tweets: Iterable<Tweet>): PreprocessResult {
+    fun preprocess(tweets: Iterable<Tweet>): PreprocessResult {
         val resultTweets = ArrayList<TweetWithVector>()
         val resultWords = HashSet<String>()
         tweets.forEach {
-            val tweet = generate(it)
+            val tweet = preprocess(it)
             resultTweets.add(tweet)
             resultWords.addAll(tweet.vector.keys)
         }

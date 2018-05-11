@@ -1,4 +1,4 @@
-package cz.spiffyk.uirsp.preprocessing
+package cz.spiffyk.uirsp.preprocess
 
 import cz.spiffyk.uirsp.tweet.TweetWithVector
 

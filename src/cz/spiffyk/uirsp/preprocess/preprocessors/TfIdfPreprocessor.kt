@@ -1,12 +1,13 @@
-package cz.spiffyk.uirsp.preprocessing
+package cz.spiffyk.uirsp.preprocess.preprocessors
 
+import cz.spiffyk.uirsp.preprocess.PreprocessResult
 import cz.spiffyk.uirsp.tweet.Tweet
 import cz.spiffyk.uirsp.tweet.TextVector
 import cz.spiffyk.uirsp.tweet.TweetWithVector
 
 object TfIdfPreprocessor {
 
-    fun generate(tweets: List<Tweet>): PreprocessResult {
+    fun preprocess(tweets: List<Tweet>): PreprocessResult {
         val overallCountVectorBuilder = TextVector.Builder()
         val tfVectors = ArrayList<TweetWithVector>()
         tweets.forEach {
@@ -23,7 +24,7 @@ object TfIdfPreprocessor {
             tfVectors.add(TweetWithVector(it, tfVectorBuilder.build() / split.size))
         }
 
-        val idfVector = generateIdf(overallCountVectorBuilder.build(), tweets.size)
+        val idfVector = idf(overallCountVectorBuilder.build(), tweets.size)
         val resultTweets = ArrayList<TweetWithVector>()
         tfVectors.forEach {
             resultTweets.add(TweetWithVector(it.tweet, it.vector.hadamard(idfVector)))
@@ -31,7 +32,7 @@ object TfIdfPreprocessor {
         return PreprocessResult(resultTweets, overallCountVectorBuilder.map.keys)
     }
 
-    private fun generateIdf(ocVector: TextVector, tweetCount: Int): TextVector {
+    private fun idf(ocVector: TextVector, tweetCount: Int): TextVector {
         val result = HashMap<String, Double>()
         ocVector.forEach {
             result[it.key] = Math.log10(tweetCount / (1.0 + it.value))
