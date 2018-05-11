@@ -11,6 +11,8 @@ import java.util.*
  */
 object TweetsCsvParser {
 
+    private const val IS_BARE_TWEET_ALLOWED = false
+
     private const val BARE_TWEET_VALUE_COUNT: Int = 4
     private const val ANNOTATED_TWEET_VALUE_COUNT: Int = 6
 
@@ -40,11 +42,15 @@ object TweetsCsvParser {
                 try {
                     when (values.size) {
                         BARE_TWEET_VALUE_COUNT -> {
-                            result.add(Tweet(
-                                    id = BigInteger(values[0]),
-                                    langCode = values[1],
-                                    timestamp = ZonedDateTime.parse(values[2], DATE_TIME_FORMATTER), // values[2] // TODO - timestamp formatter
-                                    body = values[3]))
+                            if (IS_BARE_TWEET_ALLOWED) {
+                                result.add(Tweet(
+                                        id = BigInteger(values[0]),
+                                        langCode = values[1],
+                                        timestamp = ZonedDateTime.parse(values[2], DATE_TIME_FORMATTER), // values[2] // TODO - timestamp formatter
+                                        body = values[3]))
+                            } else {
+                                throw ParserException("Bare tweets (with $BARE_TWEET_VALUE_COUNT) are not allowed!")
+                            }
                         }
                         ANNOTATED_TWEET_VALUE_COUNT -> {
                             result.add(Tweet(
