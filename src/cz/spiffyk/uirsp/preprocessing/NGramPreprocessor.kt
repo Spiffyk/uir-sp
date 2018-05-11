@@ -5,49 +5,40 @@ import cz.spiffyk.uirsp.tweet.TextVector
 import cz.spiffyk.uirsp.tweet.TweetWithVector
 
 /**
- * A Bag-of-words / N-gram generator object.
+ * An N-gram generator object.
  */
 object NGramPreprocessor {
 
-    fun generate(tweet: Tweet, n: Int = 1): TweetWithVector {
+    fun generate(tweet: Tweet, n: Int): TweetWithVector {
         if (n <= 0) {
             throw IllegalArgumentException("n must be a positive integer")
         }
-
         if (n == 1) {
-            return generateBagOfWords(tweet)
-        } else {
-            return generateNGram(tweet, n)
+            return BagOfWordsPreprocessor.generate(tweet)
         }
+
+        return generateNgram(tweet, n)
     }
 
-    fun generate(tweets: Iterable<Tweet>, n: Int = 1): PreprocessResult {
+    fun generate(tweets: Iterable<Tweet>, n: Int): PreprocessResult {
         if (n <= 0) {
             throw IllegalArgumentException("n must be a positive integer")
+        }
+        if (n == 1) {
+            return BagOfWordsPreprocessor.generate(tweets)
         }
 
         val resultTweets = ArrayList<TweetWithVector>()
         val resultWords = HashSet<String>()
         tweets.forEach {
-            val tweet = generate(it, n)
+            val tweet = generateNgram(it, n)
             resultTweets.add(tweet)
             resultWords.addAll(tweet.vector.keys)
         }
         return PreprocessResult(resultTweets, resultWords)
     }
 
-
-
-    private fun generateBagOfWords(tweet: Tweet): TweetWithVector {
-        val split = tweet.splitWords()
-        val builder = TextVector.Builder()
-        split.forEach {
-            builder.add(it)
-        }
-        return TweetWithVector(tweet, builder.build())
-    }
-
-    private fun generateNGram(tweet: Tweet, n: Int): TweetWithVector {
+    private fun generateNgram(tweet: Tweet, n: Int): TweetWithVector {
         val split = tweet.splitWords(applyFilter = false)
         val builder = TextVector.Builder()
         if (split.size >= n) {
