@@ -4,4 +4,4 @@ import cz.spiffyk.uirsp.tweet.Tweet
 import java.util.*
 
 data class ClassificationGroup(val tweets: List<Tweet>,
-                               val likelyTopics: SortedSet<ClassificationTopic>)
+                               val topics: SortedSet<ClassificationTopic>)

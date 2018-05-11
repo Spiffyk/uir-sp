@@ -61,7 +61,7 @@ object KMeansClassifier {
                 topicProbabilityMap.add(
                         ClassificationTopic(
                                 eventTopic = topicEntry.key,
-                                probability = topicEntry.value.toDouble() / tweets.size.toDouble(),
+                                percentage = topicEntry.value.toDouble() / tweets.size.toDouble(),
                                 count = topicEntry.value))
             }
 
@@ -78,14 +78,14 @@ object KMeansClassifier {
         queue@ while (!groupQueue.isEmpty()) {
             val head = groupQueue.poll()
 
-            for (topic in head.likelyTopics) {
+            for (topic in head.topics) {
                 val occupier = resultMap[topic.eventTopic]
                 if (occupier === null) {
                     resultMap[topic.eventTopic] = Occupier(head, topic)
                     continue@queue
                 }
 
-                if ((occupier.on?.probability ?: 0.0) < topic.probability) {
+                if ((occupier.on?.percentage ?: 0.0) < topic.percentage) {
                     groupQueue.add(occupier.group)
                     resultMap[topic.eventTopic] = Occupier(head, topic)
                     continue@queue
