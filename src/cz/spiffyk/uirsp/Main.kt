@@ -27,9 +27,11 @@ fun main(rawArgs: Array<String>) {
             exitProcess(STATUS_HELP)
         }
 
+        print("Parsing...")
+        val parseStart = System.currentTimeMillis()
         val tweets = TweetsCsvParser.parseFile(args.inputFile)
-
-        println("Parsed ${tweets.size} tweets.\n\n")
+        val parseEnd = System.currentTimeMillis()
+        println("done (${tweets.size} tweets in ${parseEnd - parseStart} ms)")
 
         print("Preprocessing...")
         val preprocessStart = System.currentTimeMillis()
@@ -45,7 +47,7 @@ fun main(rawArgs: Array<String>) {
         println("done. (in ${classificationEnd - classificationStart} ms)")
 
         TODO("Post-process")
-        
+
         TODO("Save results")
 
     } catch (e: ArgsDto.InvalidArgsException) {
