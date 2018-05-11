@@ -215,6 +215,13 @@ class TextVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Stri
             return this
         }
 
+        fun add(textVector: TextVector): Builder {
+            textVector.forEach {
+                add(it.key, it.value)
+            }
+            return this
+        }
+
         /**
          * Builds the [TextVector].
          */
