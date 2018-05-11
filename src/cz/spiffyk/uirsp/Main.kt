@@ -1,6 +1,7 @@
 package cz.spiffyk.uirsp
 
 import cz.spiffyk.uirsp.classification.ClassificationResult
+import cz.spiffyk.uirsp.classification.classifiers.KMeansClassifier
 import cz.spiffyk.uirsp.preprocess.preprocessors.BagOfWordsPreprocessor
 import cz.spiffyk.uirsp.preprocess.preprocessors.NGramPreprocessor
 import cz.spiffyk.uirsp.preprocess.PreprocessResult
@@ -69,6 +70,6 @@ private fun preprocess(tweets: List<Tweet>, preprocessorType: ArgsDto.Preprocess
 
 private fun classify(preprocessResult: PreprocessResult, classifierType: ArgsDto.ClassifierType): ClassificationResult =
         when(classifierType) {
-            ArgsDto.ClassifierType.K_MEANS -> TODO("K-means is not yet implemented")
+            ArgsDto.ClassifierType.K_MEANS -> KMeansClassifier.classify(preprocessResult)
             ArgsDto.ClassifierType.K_NN -> TODO("K-NN is not yet implemented")
         }
