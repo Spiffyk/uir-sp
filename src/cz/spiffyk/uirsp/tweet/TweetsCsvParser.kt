@@ -29,8 +29,6 @@ object TweetsCsvParser {
             throw ParserException("'${file.path}' is not a file!")
         }
 
-        println("Parsing '${file.absolutePath}' ...")
-
         val result = ArrayList<Tweet>()
         var lineNo = 0
 

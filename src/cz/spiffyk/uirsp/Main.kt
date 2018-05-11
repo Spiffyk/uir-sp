@@ -27,7 +27,7 @@ fun main(rawArgs: Array<String>) {
             exitProcess(STATUS_HELP)
         }
 
-        print("Parsing...")
+        print("Parsing '${args.inputFile.absolutePath}'...")
         val parseStart = System.currentTimeMillis()
         val tweets = TweetsCsvParser.parseFile(args.inputFile)
         val parseEnd = System.currentTimeMillis()
