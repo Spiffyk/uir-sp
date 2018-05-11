@@ -68,7 +68,41 @@ object KMeansClassifier {
             resultGroups.add(ClassificationGroup(tweets.map { it.tweet }, topicProbabilityMap))
         }
 
-        return ClassificationResult(resultGroups)
+        return postProcessResults(resultGroups)
+    }
+
+    private fun postProcessResults(resultGroups: List<ClassificationGroup>): ClassificationResult {
+        val groupQueue = ArrayDeque<ClassificationGroup>(resultGroups)
+        val resultMap = HashMap<EventTopic, Occupier>()
+
+        queue@ while (!groupQueue.isEmpty()) {
+            val head = groupQueue.poll()
+
+            for (topic in head.likelyTopics) {
+                val occupier = resultMap[topic.eventTopic]
+                if (occupier === null) {
+                    resultMap[topic.eventTopic] = Occupier(head, topic)
+                    continue@queue
+                }
+
+                if ((occupier.on?.probability ?: 0.0) < topic.probability) {
+                    groupQueue.add(occupier.group)
+                    resultMap[topic.eventTopic] = Occupier(head, topic)
+                    continue@queue
+                }
+            }
+
+            for (topic in EventTopic.values()) {
+                if (resultMap[topic] === null) {
+                    resultMap[topic] = Occupier(head, null)
+                    continue@queue
+                }
+            }
+
+            throw IllegalStateException("Did not fit the map???")
+        }
+
+        return ClassificationResult(resultMap.mapValues { it.value.group })
     }
 
     private fun randomMean(keySet: Set<String>,
@@ -89,4 +123,7 @@ object KMeansClassifier {
         return builder.build() / tweetGroup.size
     }
 
+
+    private data class Occupier(val group: ClassificationGroup,
+                                val on: ClassificationTopic?)
 }

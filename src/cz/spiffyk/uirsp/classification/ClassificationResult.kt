@@ -1,3 +1,5 @@
 package cz.spiffyk.uirsp.classification
 
-data class ClassificationResult(val resultGroups: List<ClassificationGroup>)
+import cz.spiffyk.uirsp.tweet.EventTopic
+
+data class ClassificationResult(val resultGroups: Map<EventTopic, ClassificationGroup>)
