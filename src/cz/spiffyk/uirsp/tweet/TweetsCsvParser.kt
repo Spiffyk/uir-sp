@@ -47,7 +47,7 @@ object TweetsCsvParser {
                                         id = BigInteger(values[0]),
                                         langCode = values[1],
                                         timestamp = ZonedDateTime.parse(values[2], DATE_TIME_FORMATTER), // values[2] // TODO - timestamp formatter
-                                        body = values[3]))
+                                        body = values[3].trim()))
                             } else {
                                 throw ParserException("Bare tweets (with $BARE_TWEET_VALUE_COUNT) are not allowed!")
                             }
@@ -58,7 +58,7 @@ object TweetsCsvParser {
                                     id = BigInteger(values[2]),
                                     langCode = values[3],
                                     timestamp = ZonedDateTime.parse(values[4], DATE_TIME_FORMATTER), // values[4] // TODO - timestamp formatter
-                                    body = values[5]))
+                                    body = values[5].trim()))
                         }
                         else -> {
                             throw ParserException("Unrecognized number of tweet values (${values.size})!")
