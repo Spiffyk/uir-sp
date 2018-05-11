@@ -22,6 +22,8 @@ data class Tweet(val id: BigInteger,
     companion object {
         const val GLOBAL_FILTER_DISABLE: Boolean = false
 
+        private const val TRIMMED_CHARS = """[^\wáéíýóúůžščřďťňě#@]*"""
+
         private val FILTERED_WORDS = setOf(
                 /*
                  * Czech prepositions
@@ -71,12 +73,24 @@ data class Tweet(val id: BigInteger,
 
 
     fun splitWords(applyFilter: Boolean = true): List<String> {
-        val splitStream = this.body.split(Regex("""[,.!?;\s]+""")).stream()
-                .filter { !it.isEmpty() }
+        val firstColon = this.body.indexOf(':')
+        val rawBody = when {
+            this.body.startsWith("RT") && firstColon != -1 && this.body.indexOf('@') < firstColon -> {
+                this.body.substring(firstColon + 1).trim()
+            }
+            else -> this.body
+        }
+
+        val splitStream = rawBody.split(Regex("""[,.!?;]*[\s]+""")).filter {
+            !it.isEmpty() && it.matches(Regex(""".*\w+.*"""))
+        }.map {
+            it.replace(Regex("""^$TRIMMED_CHARS"""), "")
+                    .replace(Regex("""$TRIMMED_CHARS$"""), "")
+        }
 
         return when (!GLOBAL_FILTER_DISABLE && applyFilter) {
             true -> splitStream.filter(wordFilter)
             false -> splitStream
-        }.collect(Collectors.toList())
+        }
     }
 }
