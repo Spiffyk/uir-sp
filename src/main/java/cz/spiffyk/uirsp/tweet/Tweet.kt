@@ -93,4 +93,14 @@ data class Tweet(val id: BigInteger,
             false -> splitStream
         }
     }
+
+    fun toCsv(): String {
+        val isEvent = when (eventTopic) {
+            EventTopic.NONE -> 0
+            else -> 1
+        }
+        val date = TweetsCsvParser.DATE_TIME_FORMATTER.format(timestamp)
+
+        return "$isEvent;${eventTopic.code};$id;$langCode;$date;$body"
+    }
 }

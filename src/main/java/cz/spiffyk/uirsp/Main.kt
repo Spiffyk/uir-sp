@@ -11,10 +11,14 @@ import cz.spiffyk.uirsp.stats.StatsCalculator
 import cz.spiffyk.uirsp.tweet.Tweet
 import cz.spiffyk.uirsp.tweet.TweetsCsvParser
 import cz.spiffyk.uirsp.util.Arguments
+import java.io.File
 import kotlin.system.exitProcess
 
 const val STATUS_HELP: Int = 255
 const val STATUS_INVALID_ARGS: Int = 1
+
+const val OUTPUT_STATS_FILENAME = "stats.txt"
+const val OUTPUT_TWEETS_FILE_EXT = ".csv"
 
 /**
  * Program entry point.
@@ -29,8 +33,6 @@ fun main(rawArgs: Array<String>) {
             println(Arguments.HELP_TEXT)
             exitProcess(STATUS_HELP)
         }
-
-        println("Parameters: $args\n\n")
 
         print("Parsing...")
         val parseStart = System.currentTimeMillis()
@@ -55,20 +57,15 @@ fun main(rawArgs: Array<String>) {
         val classificationEnd = System.currentTimeMillis()
         println(" done (in ${String.format("%.3f", (classificationEnd - classificationStart) * 0.001)} s)")
 
-        print("\n\n")
-
-        val stats = StatsCalculator.calculate(classificationResult)
-        stats.topics.forEach {
-            println("${it.key}:\n" +
-                    "\tprecision: ${it.value.precision}\n" +
-                    "\trecall: ${it.value.recall}\n" +
-                    "\tf-measure: ${it.value.fMeasure}\n")
+        if (args.outputDir.exists() && !args.outputDir.isDirectory) {
+            throw IllegalStateException("Output path exists and is not a directory!")
         }
 
-        println("=== MEAN STATS ===\n" +
-                "\tprecision: ${stats.mean.precision}\n" +
-                "\trecall: ${stats.mean.recall}\n" +
-                "\tf-measure: ${stats.mean.fMeasure}\n")
+        args.outputDir.deleteRecursively()
+        args.outputDir.mkdirs()
+
+        save(classificationResult, args.outputDir)
+
     } catch (e: Arguments.InvalidArgsException) {
         println("${e.javaClass.simpleName}: ${e.message}")
         println(Arguments.HELP_TEXT)
@@ -94,3 +91,42 @@ private fun classify(preprocessResult: PreprocessResult,
             Arguments.ClassifierType.K_MEANS -> KMeansClassifier.classify(preprocessResult, teacherRatio)
             Arguments.ClassifierType.K_NN -> KNNClassifier.classify(preprocessResult, teacherRatio, k)
         }
+
+private fun save(classificationResult: ClassificationResult,
+                 outputDir: File) {
+    saveTweets(classificationResult, outputDir)
+    saveStats(classificationResult, outputDir)
+}
+
+private fun saveTweets(classificationResult: ClassificationResult,
+                       outputDir: File) {
+
+    classificationResult.resultGroups.forEach { topic, group ->
+        val out = File(outputDir, "${topic.code}-${topic.name.toLowerCase()}$OUTPUT_TWEETS_FILE_EXT").printWriter()
+
+        group.tweets.forEach {  tweet ->
+            out.println(tweet.toCsv())
+        }
+
+        out.close()
+    }
+}
+
+private fun saveStats(classificationResult: ClassificationResult,
+                      outputDir: File) {
+    val out = File(outputDir, OUTPUT_STATS_FILENAME).printWriter()
+
+    val stats = StatsCalculator.calculate(classificationResult)
+    stats.topics.forEach {
+        out.println("${it.key}:\n" +
+                "\tprecision: ${it.value.precision}\n" +
+                "\trecall: ${it.value.recall}\n" +
+                "\tf-measure: ${it.value.fMeasure}\n")
+    }
+    out.println("=== MEAN STATS ===\n" +
+            "\tprecision: ${stats.mean.precision}\n" +
+            "\trecall: ${stats.mean.recall}\n" +
+            "\tf-measure: ${stats.mean.fMeasure}\n")
+
+    out.close()
+}
