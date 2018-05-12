@@ -16,7 +16,7 @@ import java.util.stream.Collectors
 data class Tweet(val id: BigInteger,
                  val timestamp: ZonedDateTime,
                  val langCode: String,
-                 val eventTopic: EventTopic? = null,
+                 val eventTopic: EventTopic,
                  val body: String) {
 
     companion object {

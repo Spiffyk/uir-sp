@@ -46,7 +46,10 @@ fun main(rawArgs: Array<String>) {
 
         print("Classifying...")
         val classificationStart = System.currentTimeMillis()
-        val classificationResult: ClassificationResult = classify(preprocessResult, args.classifierType)
+        val classificationResult: ClassificationResult = classify(
+                preprocessResult,
+                args.classifierType,
+                args.teacherRatio)
         val classificationEnd = System.currentTimeMillis()
         println(" done (in ${String.format("%.3f", (classificationEnd - classificationStart) * 0.001)} s)")
 
@@ -81,8 +84,10 @@ private fun preprocess(tweets: List<Tweet>, preprocessorType: Arguments.Preproce
                 TfIdfPreprocessor.preprocess(tweets)
         }
 
-private fun classify(preprocessResult: PreprocessResult, classifierType: Arguments.ClassifierType): ClassificationResult =
+private fun classify(preprocessResult: PreprocessResult,
+                     classifierType: Arguments.ClassifierType,
+                     teacherRatio: Double): ClassificationResult =
         when(classifierType) {
-            Arguments.ClassifierType.K_MEANS -> KMeansClassifier.classify(preprocessResult)
+            Arguments.ClassifierType.K_MEANS -> KMeansClassifier.classify(preprocessResult, teacherRatio)
             Arguments.ClassifierType.K_NN -> TODO("K-NN is not yet implemented")
         }

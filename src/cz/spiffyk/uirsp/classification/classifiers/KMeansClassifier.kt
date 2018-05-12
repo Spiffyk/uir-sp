@@ -14,10 +14,11 @@ import kotlin.collections.HashMap
 object KMeansClassifier {
 
     private val TOPIC_COUNT = EventTopic.values().size
+    private val RANDOM = Random()
 
-    fun classify(preprocessResult: PreprocessResult): ClassificationResult {
-
-        val means = MutableList(TOPIC_COUNT, { randomMean(preprocessResult.allKeys) })
+    fun classify(preprocessResult: PreprocessResult,
+                 teacherRatio: Double): ClassificationResult {
+        val means = generateMeans(preprocessResult, teacherRatio)
         var tweetGroups: List<List<TweetWithVector>>
 
         do {
@@ -27,7 +28,7 @@ object KMeansClassifier {
                 var closestDist = Double.MAX_VALUE
 
                 means.forEachIndexed { index, mean ->
-                    val dist = TextVector.dist(it.vector, mean)
+                    val dist = TextVector.dist(it.vector, mean.vector)
                     if (dist < closestDist) {
                         closestMean = index
                         closestDist = dist
@@ -40,35 +41,78 @@ object KMeansClassifier {
             var meansChanged = false
             tweetGroups.forEachIndexed { index, tweet ->
                 val newMean = meanOf(tweet)
-                if (newMean != means[index]) {
-                    means[index] = newMean
+                val oldMean = means[index]
+                if (newMean != oldMean.vector) {
+                    means[index] = TopicMean(newMean, oldMean.topic)
                     meansChanged = true
                 }
             }
         } while (meansChanged)
 
         val resultGroups = ArrayList<ClassificationGroup>()
-        tweetGroups.forEach { tweets ->
+        tweetGroups.forEachIndexed { index, tweets ->
             val topicCountMap = HashMap<EventTopic, Int>()
 
             tweets.forEach { tweetWithVector ->
-                val topic = tweetWithVector.tweet.eventTopic ?: throw NullPointerException()
+                val topic = tweetWithVector.tweet.eventTopic
                 topicCountMap[topic] = ((topicCountMap[topic] ?: 0) + 1)
             }
 
-            val topicProbabilityMap = TreeSet<ClassificationTopic>()
+            val topicStats = TreeSet<ClassificationTopic>()
             topicCountMap.forEach { topicEntry ->
-                topicProbabilityMap.add(
+                topicStats.add(
                         ClassificationTopic(
                                 eventTopic = topicEntry.key,
                                 percentage = topicEntry.value.toDouble() / tweets.size.toDouble(),
                                 count = topicEntry.value))
             }
 
-            resultGroups.add(ClassificationGroup(tweets.map { it.tweet }, topicProbabilityMap))
+            val presetTopic = means[index].topic
+            resultGroups.add(when (presetTopic) {
+                null -> ClassificationGroup(tweets.map { it.tweet }, topicStats)
+                else -> ClassificationGroup(tweets.map { it.tweet }, topicStats, presetTopic)
+            })
         }
 
         return postProcessResults(resultGroups)
+    }
+
+    private fun generateMeans(preprocessResult: PreprocessResult,
+                              teacherRatio: Double,
+                              random: Random = RANDOM): MutableList<TopicMean> {
+        if (teacherRatio == 0.0) {
+            return MutableList(TOPIC_COUNT, { randomMean(preprocessResult.allKeys, random) })
+        }
+
+        val topicMap = HashMap<EventTopic, ArrayList<TweetWithVector>>()
+        val shuffledTweets = preprocessResult.tweets.shuffled(RANDOM)
+        val noOfTeachers = (shuffledTweets.size * teacherRatio).toInt()
+        var i = 0
+
+        for (tweet in shuffledTweets) {
+            var topicTweets = topicMap[tweet.tweet.eventTopic]
+            if (topicTweets === null) {
+                topicTweets = ArrayList()
+                topicMap[tweet.tweet.eventTopic] = topicTweets
+            }
+            topicTweets.add(tweet)
+
+            if (i >= noOfTeachers) {
+                break
+            }
+            i++
+        }
+
+        val result = ArrayList<TopicMean>()
+        topicMap.forEach { entry ->
+            result.add(TopicMean(meanOf(entry.value), entry.key))
+        }
+
+        for (i in 1..(TOPIC_COUNT - result.size)) {
+            result.add(randomMean(preprocessResult.allKeys, random))
+        }
+
+        return result
     }
 
     private fun postProcessResults(resultGroups: List<ClassificationGroup>): ClassificationResult {
@@ -77,6 +121,15 @@ object KMeansClassifier {
 
         queue@ while (!groupQueue.isEmpty()) {
             val head = groupQueue.poll()
+
+            if (head.presetTopic !== null) {
+                val occupier = resultMap[head.presetTopic]
+                if (occupier !== null) {
+                    groupQueue.add(occupier.group)
+                }
+                resultMap[head.presetTopic] = Occupier.undeniable(head, head.presetTopic)
+                continue@queue
+            }
 
             for (topic in head.topics) {
                 val occupier = resultMap[topic.eventTopic]
@@ -105,14 +158,17 @@ object KMeansClassifier {
         return ClassificationResult(resultMap.mapValues { it.value.group })
     }
 
+    /**
+     * Generates a random text vector for the specified key set.
+     */
     private fun randomMean(keySet: Set<String>,
-                           random: Random = Random(),
-                           eccentricity: Double = 1.0): TextVector {
+                           random: Random = RANDOM,
+                           eccentricity: Double = 1.0): TopicMean {
         val map = HashMap<String, Double>()
         keySet.forEach {
             map[it] = (random.nextDouble() * eccentricity * 2) - eccentricity
         }
-        return TextVector(map)
+        return TopicMean(TextVector(map))
     }
 
     private fun meanOf(tweetGroup: List<TweetWithVector>): TextVector {
@@ -125,5 +181,20 @@ object KMeansClassifier {
 
 
     private data class Occupier(val group: ClassificationGroup,
-                                val on: ClassificationTopic?)
+                                val on: ClassificationTopic?) {
+        companion object {
+            fun undeniable(group: ClassificationGroup,
+                           eventTopic: EventTopic): Occupier {
+                return Occupier(
+                        group = group,
+                        on = ClassificationTopic(
+                                eventTopic = eventTopic,
+                                percentage = Double.MAX_VALUE,
+                                count = -1))
+            }
+        }
+    }
+
+    private data class TopicMean(val vector: TextVector,
+                                 val topic: EventTopic? = null)
 }
