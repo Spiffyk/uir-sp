@@ -3,7 +3,7 @@ package cz.spiffyk.uirsp.classification.classifiers
 import cz.spiffyk.uirsp.classification.ClassificationGroup
 import cz.spiffyk.uirsp.classification.ClassificationResult
 import cz.spiffyk.uirsp.preprocess.PreprocessResult
-import cz.spiffyk.uirsp.tweet.EventTopic
+import cz.spiffyk.uirsp.tweet.Topic
 import cz.spiffyk.uirsp.tweet.TextVector
 import cz.spiffyk.uirsp.tweet.TweetWithVector
 import java.util.*
@@ -13,7 +13,7 @@ import kotlin.collections.HashSet
 
 object KNNClassifier {
 
-    private val TOPIC_COUNT = EventTopic.values().size
+    private val TOPIC_COUNT = Topic.values().size
     private val RANDOM = Random()
 
     fun classify(preprocessResult: PreprocessResult,
@@ -39,7 +39,7 @@ object KNNClassifier {
                 }
             }
 
-            val topicCounts = HashMap<EventTopic, Int>()
+            val topicCounts = HashMap<Topic, Int>()
             var i = 0
             for (neighbor in neighbors) {
                 if (i >= k) {
@@ -50,7 +50,7 @@ object KNNClassifier {
             }
 
             var maxCount = -1
-            var maxTopic: EventTopic? = null
+            var maxTopic: Topic? = null
             topicCounts.forEach { topic, count ->
                 if (count >= maxCount) {
                     if (count > maxCount || RANDOM.nextBoolean()) {
@@ -75,23 +75,23 @@ object KNNClassifier {
 
     private fun teach(tweets: MutableSet<TweetWithVector>,
                       teacherRatio: Double,
-                      random: Random = RANDOM): Map<EventTopic, ArrayList<TweetWithVector>> {
-        val resultMap = HashMap<EventTopic, ArrayList<TweetWithVector>>()
-        val intermediateMap = HashMap<EventTopic, ArrayList<TweetWithVector>>()
-        EventTopic.values().forEach { topic ->
+                      random: Random = RANDOM): Map<Topic, ArrayList<TweetWithVector>> {
+        val resultMap = HashMap<Topic, ArrayList<TweetWithVector>>()
+        val intermediateMap = HashMap<Topic, ArrayList<TweetWithVector>>()
+        Topic.values().forEach { topic ->
             resultMap[topic] = ArrayList()
             intermediateMap[topic] = ArrayList()
         }
 
         tweets.forEach { tweet ->
-            intermediateMap[tweet.tweet.eventTopic]!!.add(tweet)
+            intermediateMap[tweet.tweet.topic]!!.add(tweet)
         }
 
         var remainingTeachers = (tweets.size * teacherRatio).toInt()
         var remainingTopics = TOPIC_COUNT
 
         for (i in 0..(TOPIC_COUNT - 1)) {
-            val topic = EventTopic.values()[i]
+            val topic = Topic.values()[i]
 
             remainingTopics--
             val noOfTeachers = when (i) {
@@ -118,7 +118,7 @@ object KNNClassifier {
     }
 
     private class Neighbor(val neighbor: TweetWithVector,
-                           val topic: EventTopic,
+                           val topic: Topic,
                            val distance: Double): Comparable<Neighbor> {
 
         override fun compareTo(other: Neighbor): Int = this.distance.compareTo(other.distance)

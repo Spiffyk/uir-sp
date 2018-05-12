@@ -1,16 +1,16 @@
 package cz.spiffyk.uirsp.classification.classifiers
 
 import cz.spiffyk.uirsp.classification.ClassificationTopic
-import cz.spiffyk.uirsp.tweet.EventTopic
+import cz.spiffyk.uirsp.tweet.Topic
 import cz.spiffyk.uirsp.tweet.TweetWithVector
 import java.util.*
 
 object ClassifierUtils {
 
     fun calculateTopicStats(tweets: List<TweetWithVector>): TreeSet<ClassificationTopic> {
-        val topicCountMap = HashMap<EventTopic, Int>()
+        val topicCountMap = HashMap<Topic, Int>()
         tweets.forEach { tweetWithVector ->
-            val topic = tweetWithVector.tweet.eventTopic
+            val topic = tweetWithVector.tweet.topic
             topicCountMap[topic] = ((topicCountMap[topic] ?: 0) + 1)
         }
 
@@ -18,7 +18,7 @@ object ClassifierUtils {
         topicCountMap.forEach { topicEntry ->
             topicStats.add(
                     ClassificationTopic(
-                            eventTopic = topicEntry.key,
+                            topic = topicEntry.key,
                             percentage = topicEntry.value.toDouble() / tweets.size.toDouble(),
                             count = topicEntry.value))
         }

@@ -1,30 +1,29 @@
 package cz.spiffyk.uirsp.stats
 
 import cz.spiffyk.uirsp.classification.ClassificationResult
-import cz.spiffyk.uirsp.tweet.EventTopic
-import kotlin.math.absoluteValue
+import cz.spiffyk.uirsp.tweet.Topic
 
 object StatsCalculator {
 
-    private val EVENT_TOPICS = EventTopic.values()
+    private val EVENT_TOPICS = Topic.values()
 
     fun calculate(classificationResult: ClassificationResult): Stats {
-        val relevantMap = HashMap<EventTopic, Int>()
-        val retrievedMap = HashMap<EventTopic, Int>()
-        val actualMap = HashMap<EventTopic, Int>()
+        val relevantMap = HashMap<Topic, Int>()
+        val retrievedMap = HashMap<Topic, Int>()
+        val actualMap = HashMap<Topic, Int>()
 
         classificationResult.resultGroups.forEach { group ->
             group.value.topics.forEach { topic ->
-                relevantMap[topic.eventTopic] = (relevantMap[topic.eventTopic] ?: 0) + topic.count
+                relevantMap[topic.topic] = (relevantMap[topic.topic] ?: 0) + topic.count
                 retrievedMap[group.key] = (retrievedMap[group.key] ?: 0) + topic.count
 
-                if (topic.eventTopic === group.key) {
-                    actualMap[topic.eventTopic] = (actualMap[topic.eventTopic] ?: 0) + topic.count
+                if (topic.topic === group.key) {
+                    actualMap[topic.topic] = (actualMap[topic.topic] ?: 0) + topic.count
                 }
             }
         }
 
-        val topicStats = HashMap<EventTopic, Stats.StatsUnit>()
+        val topicStats = HashMap<Topic, Stats.StatsUnit>()
         EVENT_TOPICS.forEach { topic ->
             val relevant = relevantMap[topic] ?: 0
             val retrieved = retrievedMap[topic] ?: 0

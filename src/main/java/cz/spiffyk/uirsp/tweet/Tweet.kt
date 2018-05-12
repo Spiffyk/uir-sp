@@ -2,7 +2,6 @@ package cz.spiffyk.uirsp.tweet
 
 import java.math.BigInteger
 import java.time.ZonedDateTime
-import java.util.stream.Collectors
 
 /**
  * A data class representing a tweet.
@@ -10,13 +9,13 @@ import java.util.stream.Collectors
  * @property id ID of the tweet
  * @property timestamp the time of the tweet's posting
  * @property langCode code of the language the tweet is written in
- * @property eventTopic the topic of the event; tweet has not been event-annotated if this is `null`
+ * @property topic the topic of the event; tweet has not been event-annotated if this is `null`
  * @property body the body of the tweet
  */
 data class Tweet(val id: BigInteger,
                  val timestamp: ZonedDateTime,
                  val langCode: String,
-                 val eventTopic: EventTopic,
+                 val topic: Topic,
                  val body: String) {
 
     companion object {
@@ -95,12 +94,12 @@ data class Tweet(val id: BigInteger,
     }
 
     fun toCsv(): String {
-        val isEvent = when (eventTopic) {
-            EventTopic.NONE -> 0
+        val isEvent = when (topic) {
+            topic.NONE -> 0
             else -> 1
         }
         val date = TweetsCsvParser.DATE_TIME_FORMATTER.format(timestamp)
 
-        return "$isEvent;${eventTopic.code};$id;$langCode;$date;$body"
+        return "$isEvent;${topic.code};$id;$langCode;$date;$body"
     }
 }

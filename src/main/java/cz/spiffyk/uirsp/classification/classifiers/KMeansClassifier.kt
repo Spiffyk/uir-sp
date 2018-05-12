@@ -4,7 +4,7 @@ import cz.spiffyk.uirsp.classification.ClassificationGroup
 import cz.spiffyk.uirsp.classification.ClassificationResult
 import cz.spiffyk.uirsp.classification.ClassificationTopic
 import cz.spiffyk.uirsp.preprocess.PreprocessResult
-import cz.spiffyk.uirsp.tweet.EventTopic
+import cz.spiffyk.uirsp.tweet.Topic
 import cz.spiffyk.uirsp.tweet.TextVector
 import cz.spiffyk.uirsp.tweet.TweetWithVector
 import java.util.*
@@ -13,7 +13,7 @@ import kotlin.collections.HashMap
 
 object KMeansClassifier {
 
-    private val TOPIC_COUNT = EventTopic.values().size
+    private val TOPIC_COUNT = Topic.values().size
     private val RANDOM = Random()
 
     fun classify(preprocessResult: PreprocessResult,
@@ -69,7 +69,7 @@ object KMeansClassifier {
             return MutableList(TOPIC_COUNT, { randomMean(preprocessResult.allKeys, random) })
         }
 
-        val topicMap = HashMap<EventTopic, ArrayList<TweetWithVector>>()
+        val topicMap = HashMap<Topic, ArrayList<TweetWithVector>>()
         val shuffledTweets = preprocessResult.tweets.shuffled(RANDOM)
         val noOfTeachers = (shuffledTweets.size * teacherRatio).toInt()
         var i = 0
@@ -79,10 +79,10 @@ object KMeansClassifier {
                 break
             }
 
-            var topicTweets = topicMap[tweet.tweet.eventTopic]
+            var topicTweets = topicMap[tweet.tweet.topic]
             if (topicTweets === null) {
                 topicTweets = ArrayList()
-                topicMap[tweet.tweet.eventTopic] = topicTweets
+                topicMap[tweet.tweet.topic] = topicTweets
             }
             topicTweets.add(tweet)
 
@@ -103,7 +103,7 @@ object KMeansClassifier {
 
     private fun postProcessResults(resultGroups: List<ClassificationGroup>): ClassificationResult {
         val groupQueue = ArrayDeque<ClassificationGroup>(resultGroups)
-        val resultMap = HashMap<EventTopic, Occupier>()
+        val resultMap = HashMap<Topic, Occupier>()
 
         queue@ while (!groupQueue.isEmpty()) {
             val head = groupQueue.poll()
@@ -118,20 +118,20 @@ object KMeansClassifier {
             }
 
             for (topic in head.topics) {
-                val occupier = resultMap[topic.eventTopic]
+                val occupier = resultMap[topic.topic]
                 if (occupier === null) {
-                    resultMap[topic.eventTopic] = Occupier(head, topic)
+                    resultMap[topic.topic] = Occupier(head, topic)
                     continue@queue
                 }
 
                 if ((occupier.on?.percentage ?: 0.0) < topic.percentage) {
                     groupQueue.add(occupier.group)
-                    resultMap[topic.eventTopic] = Occupier(head, topic)
+                    resultMap[topic.topic] = Occupier(head, topic)
                     continue@queue
                 }
             }
 
-            for (topic in EventTopic.values()) {
+            for (topic in Topic.values()) {
                 if (resultMap[topic] === null) {
                     resultMap[topic] = Occupier(head, null)
                     continue@queue
@@ -170,11 +170,11 @@ object KMeansClassifier {
                                 val on: ClassificationTopic?) {
         companion object {
             fun undeniable(group: ClassificationGroup,
-                           eventTopic: EventTopic): Occupier {
+                           topic: Topic): Occupier {
                 return Occupier(
                         group = group,
                         on = ClassificationTopic(
-                                eventTopic = eventTopic,
+                                topic = topic,
                                 percentage = Double.MAX_VALUE,
                                 count = -1))
             }
@@ -182,5 +182,5 @@ object KMeansClassifier {
     }
 
     private data class TopicMean(val vector: TextVector,
-                                 val topic: EventTopic? = null)
+                                 val topic: Topic? = null)
 }

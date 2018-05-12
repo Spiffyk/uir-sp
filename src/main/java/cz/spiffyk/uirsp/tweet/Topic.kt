@@ -3,7 +3,7 @@ package cz.spiffyk.uirsp.tweet
 /**
  * The topic of an event.
  */
-enum class EventTopic(val code: String) {
+enum class Topic(val code: String) {
     POLITICS("po"),
     INDUSTRY("pr"),
     AGRICULTURE("ze"),
@@ -18,7 +18,7 @@ enum class EventTopic(val code: String) {
         /**
          * Gets a topic by the specified code. Returns `null` if no topic with such code exists.
          */
-        fun of(code: String): EventTopic? {
+        fun of(code: String): Topic? {
             for (v in values()) {
                 if (v.code == code) {
                     return v
@@ -31,7 +31,7 @@ enum class EventTopic(val code: String) {
         /**
          * Gets a topic by the specified code. Throws an [IllegalArgumentException] if no topic with such code exists.
          */
-        fun ofStrict(code: String): EventTopic {
+        fun ofStrict(code: String): Topic {
             return of(code) ?: throw IllegalArgumentException("Invalid topic code!")
         }
     }

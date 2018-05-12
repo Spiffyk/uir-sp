@@ -42,7 +42,7 @@ object TweetsCsvParser {
 
                         ANNOTATED_TWEET_VALUE_COUNT -> {
                             result.add(Tweet(
-                                    eventTopic = EventTopic.ofStrict(values[1]),
+                                    topic = Topic.ofStrict(values[1]),
                                     id = BigInteger(values[2]),
                                     langCode = values[3],
                                     timestamp = ZonedDateTime.parse(values[4], DATE_TIME_FORMATTER),

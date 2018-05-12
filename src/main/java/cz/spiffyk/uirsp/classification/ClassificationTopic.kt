@@ -1,8 +1,8 @@
 package cz.spiffyk.uirsp.classification
 
-import cz.spiffyk.uirsp.tweet.EventTopic
+import cz.spiffyk.uirsp.tweet.Topic
 
-data class ClassificationTopic(val eventTopic: EventTopic,
+data class ClassificationTopic(val topic: Topic,
                                val percentage: Double,
                                val count: Int) : Comparable<ClassificationTopic> {
 
