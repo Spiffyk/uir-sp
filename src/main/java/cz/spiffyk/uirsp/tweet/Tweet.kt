@@ -95,7 +95,7 @@ data class Tweet(val id: BigInteger,
 
     fun toCsv(): String {
         val isEvent = when (topic) {
-            topic.NONE -> 0
+            Topic.NONE -> 0
             else -> 1
         }
         val date = TweetsCsvParser.DATE_TIME_FORMATTER.format(timestamp)
