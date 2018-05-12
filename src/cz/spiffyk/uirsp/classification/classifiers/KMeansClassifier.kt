@@ -51,22 +51,7 @@ object KMeansClassifier {
 
         val resultGroups = ArrayList<ClassificationGroup>()
         tweetGroups.forEachIndexed { index, tweets ->
-            val topicCountMap = HashMap<EventTopic, Int>()
-
-            tweets.forEach { tweetWithVector ->
-                val topic = tweetWithVector.tweet.eventTopic
-                topicCountMap[topic] = ((topicCountMap[topic] ?: 0) + 1)
-            }
-
-            val topicStats = TreeSet<ClassificationTopic>()
-            topicCountMap.forEach { topicEntry ->
-                topicStats.add(
-                        ClassificationTopic(
-                                eventTopic = topicEntry.key,
-                                percentage = topicEntry.value.toDouble() / tweets.size.toDouble(),
-                                count = topicEntry.value))
-            }
-
+            val topicStats = ClassifierUtils.calculateTopicStats(tweets)
             val presetTopic = means[index].topic
             resultGroups.add(when (presetTopic) {
                 null -> ClassificationGroup(tweets.map { it.tweet }, topicStats)

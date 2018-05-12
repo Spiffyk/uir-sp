@@ -2,6 +2,7 @@ package cz.spiffyk.uirsp
 
 import cz.spiffyk.uirsp.classification.ClassificationResult
 import cz.spiffyk.uirsp.classification.classifiers.KMeansClassifier
+import cz.spiffyk.uirsp.classification.classifiers.KNNClassifier
 import cz.spiffyk.uirsp.preprocess.preprocessors.BagOfWordsPreprocessor
 import cz.spiffyk.uirsp.preprocess.preprocessors.NGramPreprocessor
 import cz.spiffyk.uirsp.preprocess.PreprocessResult
@@ -49,7 +50,8 @@ fun main(rawArgs: Array<String>) {
         val classificationResult: ClassificationResult = classify(
                 preprocessResult,
                 args.classifierType,
-                args.teacherRatio)
+                args.teacherRatio,
+                args.k)
         val classificationEnd = System.currentTimeMillis()
         println(" done (in ${String.format("%.3f", (classificationEnd - classificationStart) * 0.001)} s)")
 
@@ -86,8 +88,9 @@ private fun preprocess(tweets: List<Tweet>, preprocessorType: Arguments.Preproce
 
 private fun classify(preprocessResult: PreprocessResult,
                      classifierType: Arguments.ClassifierType,
-                     teacherRatio: Double): ClassificationResult =
+                     teacherRatio: Double,
+                     k: Int): ClassificationResult =
         when(classifierType) {
             Arguments.ClassifierType.K_MEANS -> KMeansClassifier.classify(preprocessResult, teacherRatio)
-            Arguments.ClassifierType.K_NN -> TODO("K-NN is not yet implemented")
+            Arguments.ClassifierType.K_NN -> KNNClassifier.classify(preprocessResult, teacherRatio, k)
         }
