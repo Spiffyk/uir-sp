@@ -90,6 +90,10 @@ object KMeansClassifier {
         var i = 0
 
         for (tweet in shuffledTweets) {
+            if (i >= noOfTeachers) {
+                break
+            }
+
             var topicTweets = topicMap[tweet.tweet.eventTopic]
             if (topicTweets === null) {
                 topicTweets = ArrayList()
@@ -97,9 +101,6 @@ object KMeansClassifier {
             }
             topicTweets.add(tweet)
 
-            if (i >= noOfTeachers) {
-                break
-            }
             i++
         }
 
