@@ -5,17 +5,19 @@ import java.io.File
 /**
  * A class representing parsed command line options.
  */
-data class ArgsDto(val inputFile: File,
-                   val outputDir: File,
-                   val preprocessorType: PreprocessorType,
-                   val n: Int,
-                   val classifierType: ClassifierType,
-                   val k: Int) {
+data class Arguments(val inputFile: File,
+                     val outputDir: File,
+                     val preprocessorType: PreprocessorType,
+                     val n: Int,
+                     val classifierType: ClassifierType,
+                     val k: Int,
+                     val teacherRatio: Double) {
 
     companion object {
         private const val DEFAULT_OUTPUT_DIR = "tweets-output"
         private const val DEFAULT_N_GRAM_N = 3
         private const val DEFAULT_K_NN_K = 6
+        private const val DEFAULT_TEACHER_RATIO = 0.0
 
         private val PREPROCESSOR_LIST = PreprocessorType.values().joinToString(
                 separator = ", ",
@@ -33,28 +35,30 @@ data class ArgsDto(val inputFile: File,
                         "-n <n>          |  --n <n>                 - sets the parameter for n-gram (default: $DEFAULT_N_GRAM_N)\n" +
                         "-c <algo>       |  --classifier <algo>     - sets the classifier algorithm\n" +
                         "-k <k>          |  --k <k>                 - sets the parameter for k-NN (default: $DEFAULT_K_NN_K)\n" +
+                        "-t <ratio>      |  --teacher <ratio>       - sets the percentage of tweets to use for teaching (default: $DEFAULT_TEACHER_RATIO)\n" +
                         "-h              |  --help                  - shows this help\n" +
                         "\n" +
                         "Supported preprocessors: $PREPROCESSOR_LIST\n" +
                         "Supported classifiers: $CLASSIFIER_LIST\n"
 
         /**
-         * Parses command line arguments into a [ArgsDto] object.
+         * Parses command line arguments into a [Arguments] object.
          *
          * @param args Command line arguments as passed to a `main(args: Array<String>)` entry point
          *
-         * @return an [ArgsDto] object parsed from CLI arguments or `null` if `--help` or `-h` was found
+         * @return an [Arguments] object parsed from CLI arguments or `null` if `--help` or `-h` was found
          *
          * @throws InvalidArgsException when command line arguments are invalid
          */
         @Throws(InvalidArgsException::class)
-        fun of(args: Array<String>): ArgsDto? {
+        fun of(args: Array<String>): Arguments? {
             var inputFile: File? = null
             var outputDir: File? = null
             var preprocessorType: PreprocessorType? = null
             var n = DEFAULT_N_GRAM_N
             var classifierType: ClassifierType? = null
             var k = DEFAULT_K_NN_K
+            var teacherRatio = DEFAULT_TEACHER_RATIO
 
             val iterator = args.iterator()
             while (iterator.hasNext()) {
@@ -93,7 +97,11 @@ data class ArgsDto(val inputFile: File,
 
                             val stringN = iterator.next()
                             try {
-                                n = Integer.parseInt(stringN)
+                                n = stringN.toInt()
+
+                                if (n < 1) {
+                                    throw InvalidArgsException("n must be 1 or greater!")
+                                }
                             } catch (e: NumberFormatException) {
                                 throw InvalidArgsException("'$stringN' is not a valid integer!", e)
                             }
@@ -114,9 +122,30 @@ data class ArgsDto(val inputFile: File,
 
                             val stringK = iterator.next()
                             try {
-                                k = Integer.parseInt(stringK)
+                                k = stringK.toInt()
+
+                                if (k < 1) {
+                                    throw InvalidArgsException("k must be 1 or greater!")
+                                }
                             } catch (e: NumberFormatException) {
                                 throw InvalidArgsException("'$stringK' is not a valid integer!", e)
+                            }
+                        }
+
+                        "-t", "--teacher" -> {
+                            if (!iterator.hasNext()) {
+                                throw InvalidArgsException("The '$arg' switch requires another argument as a parameter!")
+                            }
+
+                            val stringTeacherRatio = iterator.next()
+                            try {
+                                teacherRatio = stringTeacherRatio.toDouble()
+
+                                if (teacherRatio < 0.0 || teacherRatio > 1.0) {
+                                    throw InvalidArgsException("The ratio must be a real number between 0 and 1!")
+                                }
+                            } catch (e: NumberFormatException) {
+                                throw InvalidArgsException("'$stringTeacherRatio' is not a valid real number!", e)
                             }
                         }
 
@@ -132,13 +161,14 @@ data class ArgsDto(val inputFile: File,
                 }
             }
 
-            return ArgsDto(
+            return Arguments(
                     inputFile = inputFile ?: throw InvalidArgsException("An input file was not provided!"),
                     outputDir = outputDir ?: File(DEFAULT_OUTPUT_DIR),
                     preprocessorType = preprocessorType ?: throw InvalidArgsException("A preprocessor type was not provided!"),
                     n = n,
                     classifierType = classifierType ?: throw InvalidArgsException("A classifier type was not provided!"),
-                    k = k)
+                    k = k,
+                    teacherRatio = teacherRatio)
         }
     }
 

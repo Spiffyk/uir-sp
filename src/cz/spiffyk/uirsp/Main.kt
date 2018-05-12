@@ -9,7 +9,7 @@ import cz.spiffyk.uirsp.preprocess.preprocessors.TfIdfPreprocessor
 import cz.spiffyk.uirsp.stats.StatsCalculator
 import cz.spiffyk.uirsp.tweet.Tweet
 import cz.spiffyk.uirsp.tweet.TweetsCsvParser
-import cz.spiffyk.uirsp.util.ArgsDto
+import cz.spiffyk.uirsp.util.Arguments
 import kotlin.system.exitProcess
 
 const val STATUS_HELP: Int = 255
@@ -18,14 +18,14 @@ const val STATUS_INVALID_ARGS: Int = 1
 /**
  * Program entry point.
  *
- * @param rawArgs Command line arguments (parsed by [ArgsDto])
+ * @param rawArgs Command line arguments (parsed by [Arguments])
  */
 fun main(rawArgs: Array<String>) {
     try {
-        val args = ArgsDto.of(rawArgs)
+        val args = Arguments.of(rawArgs)
 
         if (args === null) {
-            println(ArgsDto.HELP_TEXT)
+            println(Arguments.HELP_TEXT)
             exitProcess(STATUS_HELP)
         }
 
@@ -64,25 +64,25 @@ fun main(rawArgs: Array<String>) {
                 "\tprecision: ${stats.mean.precision}\n" +
                 "\trecall: ${stats.mean.recall}\n" +
                 "\tf-measure: ${stats.mean.fMeasure}\n")
-    } catch (e: ArgsDto.InvalidArgsException) {
+    } catch (e: Arguments.InvalidArgsException) {
         println("${e.javaClass.simpleName}: ${e.message}")
-        println(ArgsDto.HELP_TEXT)
+        println(Arguments.HELP_TEXT)
         exitProcess(STATUS_INVALID_ARGS)
     }
 }
 
-private fun preprocess(tweets: List<Tweet>, preprocessorType: ArgsDto.PreprocessorType): PreprocessResult =
+private fun preprocess(tweets: List<Tweet>, preprocessorType: Arguments.PreprocessorType): PreprocessResult =
         when(preprocessorType) {
-            ArgsDto.PreprocessorType.BAG_OF_WORDS ->
+            Arguments.PreprocessorType.BAG_OF_WORDS ->
                 BagOfWordsPreprocessor.preprocess(tweets)
-            ArgsDto.PreprocessorType.N_GRAM ->
+            Arguments.PreprocessorType.N_GRAM ->
                 NGramPreprocessor.preprocess(tweets, 3)
-            ArgsDto.PreprocessorType.TF_IDF ->
+            Arguments.PreprocessorType.TF_IDF ->
                 TfIdfPreprocessor.preprocess(tweets)
         }
 
-private fun classify(preprocessResult: PreprocessResult, classifierType: ArgsDto.ClassifierType): ClassificationResult =
+private fun classify(preprocessResult: PreprocessResult, classifierType: Arguments.ClassifierType): ClassificationResult =
         when(classifierType) {
-            ArgsDto.ClassifierType.K_MEANS -> KMeansClassifier.classify(preprocessResult)
-            ArgsDto.ClassifierType.K_NN -> TODO("K-NN is not yet implemented")
+            Arguments.ClassifierType.K_MEANS -> KMeansClassifier.classify(preprocessResult)
+            Arguments.ClassifierType.K_NN -> TODO("K-NN is not yet implemented")
         }
