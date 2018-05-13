@@ -103,7 +103,7 @@ object KMeansClassifier {
             result.add(TopicMean(meanOf(entry.value), entry.key))
         }
 
-        for (i in 1..(Topic.values().size - result.size)) {
+        for (x in 1..(Topic.values().size - result.size)) {
             result.add(randomMean(preprocessResult.allKeys, random))
         }
 

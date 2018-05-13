@@ -12,12 +12,6 @@ import java.util.*
 object TweetsCsvParser {
 
     /**
-     * Un-annotated tweet value count.
-     */
-    @Deprecated("Used for early testing.")
-    private const val BARE_TWEET_VALUE_COUNT: Int = 4
-
-    /**
      * Annotated tweet value count.
      */
     private const val ANNOTATED_TWEET_VALUE_COUNT: Int = 6
@@ -60,9 +54,6 @@ object TweetsCsvParser {
 
                 try {
                     when (values.size) {
-                        BARE_TWEET_VALUE_COUNT ->
-                            throw ParserException("Bare tweets (with $BARE_TWEET_VALUE_COUNT) are not allowed!")
-
                         ANNOTATED_TWEET_VALUE_COUNT -> {
                             result.add(Tweet(
                                     topic = Topic.ofStrict(values[1]),
