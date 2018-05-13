@@ -11,6 +11,9 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 
+/**
+ * A k-NN classifier object.
+ */
 object KNNClassifier {
 
     private val RANDOM = Random()

@@ -11,6 +11,9 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
+/**
+ * A k-means classifier object.
+ */
 object KMeansClassifier {
 
     private val RANDOM = Random()
