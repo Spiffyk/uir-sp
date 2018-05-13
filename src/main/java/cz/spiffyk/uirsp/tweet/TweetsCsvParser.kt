@@ -11,13 +11,36 @@ import java.util.*
  */
 object TweetsCsvParser {
 
+    /**
+     * Un-annotated tweet value count.
+     */
+    @Deprecated("Used for early testing.")
     private const val BARE_TWEET_VALUE_COUNT: Int = 4
+
+    /**
+     * Annotated tweet value count.
+     */
     private const val ANNOTATED_TWEET_VALUE_COUNT: Int = 6
 
+    /**
+     * The datetime pattern used in the CSV files.
+     */
     private const val DATE_TIME_PATTERN: String = "E MMM d HH:mm:ss zz y"
+
+    /**
+     * The datetime formatter for parsing/formatting dates in tweets CSVs.
+     */
     val DATE_TIME_FORMATTER: DateTimeFormatter =
             DateTimeFormatter.ofPattern(DATE_TIME_PATTERN)
 
+
+    /**
+     * Parses the specified file into a list of [Tweet]s.
+     *
+     * @param file the file to parse
+     * @param valueSeparator separator of individual values
+     * @return a list of [Tweet]s parsed from the file
+     */
     fun parseFile(file: File,
                   valueSeparator: Char = ';'): List<Tweet> {
         if (!file.exists()) {
@@ -46,7 +69,7 @@ object TweetsCsvParser {
                                     id = BigInteger(values[2]),
                                     langCode = values[3],
                                     timestamp = ZonedDateTime.parse(values[4], DATE_TIME_FORMATTER),
-                                    body = treatBody(values[5])))
+                                    body = values[5].trim()))
                         }
 
                         else -> {
@@ -63,9 +86,7 @@ object TweetsCsvParser {
         return result
     }
 
-    private fun treatBody(body: String): String {
-        return body.trim()
-    }
+
 
     /**
      * Thrown when parser fails.

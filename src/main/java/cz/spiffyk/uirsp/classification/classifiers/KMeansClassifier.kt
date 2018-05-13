@@ -2,7 +2,7 @@ package cz.spiffyk.uirsp.classification.classifiers
 
 import cz.spiffyk.uirsp.classification.ClassificationGroup
 import cz.spiffyk.uirsp.classification.ClassificationResult
-import cz.spiffyk.uirsp.classification.ClassificationTopic
+import cz.spiffyk.uirsp.classification.ClassificationTopicStats
 import cz.spiffyk.uirsp.preprocess.PreprocessResult
 import cz.spiffyk.uirsp.tweet.Topic
 import cz.spiffyk.uirsp.tweet.TextVector
@@ -13,16 +13,21 @@ import kotlin.collections.HashMap
 
 object KMeansClassifier {
 
-    private val TOPIC_COUNT = Topic.values().size
     private val RANDOM = Random()
 
+    /**
+     * Classifies the pre-processed tweets.
+     *
+     * @param preprocessResult the result of a pre-process
+     * @param teacherRatio the ratio of tweets to be used as a teacher
+     */
     fun classify(preprocessResult: PreprocessResult,
                  teacherRatio: Double): ClassificationResult {
         val means = generateMeans(preprocessResult, teacherRatio)
         var tweetGroups: List<List<TweetWithVector>>
 
         do {
-            tweetGroups = List(TOPIC_COUNT, { ArrayList<TweetWithVector>() })
+            tweetGroups = List(Topic.values().size, { ArrayList<TweetWithVector>() })
             preprocessResult.tweets.forEach {
                 var closestMean = -1
                 var closestDist = Double.MAX_VALUE
@@ -62,11 +67,15 @@ object KMeansClassifier {
         return postProcessResults(resultGroups)
     }
 
+    /**
+     * Generates starting means. If the teacher ratio is zero, starting means are picked randomly, otherwise
+     * they are determined by the teaching data.
+     */
     private fun generateMeans(preprocessResult: PreprocessResult,
                               teacherRatio: Double,
                               random: Random = RANDOM): MutableList<TopicMean> {
         if (teacherRatio == 0.0) {
-            return MutableList(TOPIC_COUNT, { randomMean(preprocessResult.allKeys, random) })
+            return MutableList(Topic.values().size, { randomMean(preprocessResult.allKeys, random) })
         }
 
         val topicMap = HashMap<Topic, ArrayList<TweetWithVector>>()
@@ -94,13 +103,16 @@ object KMeansClassifier {
             result.add(TopicMean(meanOf(entry.value), entry.key))
         }
 
-        for (i in 1..(TOPIC_COUNT - result.size)) {
+        for (i in 1..(Topic.values().size - result.size)) {
             result.add(randomMean(preprocessResult.allKeys, random))
         }
 
         return result
     }
 
+    /**
+     * Estimates, which group is of which [Topic].
+     */
     private fun postProcessResults(resultGroups: List<ClassificationGroup>): ClassificationResult {
         val groupQueue = ArrayDeque<ClassificationGroup>(resultGroups)
         val resultMap = HashMap<Topic, Occupier>()
@@ -157,6 +169,9 @@ object KMeansClassifier {
         return TopicMean(TextVector(map))
     }
 
+    /**
+     * Calculates a mean vector of a group of tweet vectors.
+     */
     private fun meanOf(tweetGroup: List<TweetWithVector>): TextVector {
         val builder = TextVector.Builder()
         tweetGroup.forEach {
@@ -166,14 +181,15 @@ object KMeansClassifier {
     }
 
 
+
     private data class Occupier(val group: ClassificationGroup,
-                                val on: ClassificationTopic?) {
+                                val on: ClassificationTopicStats?) {
         companion object {
             fun undeniable(group: ClassificationGroup,
                            topic: Topic): Occupier {
                 return Occupier(
                         group = group,
-                        on = ClassificationTopic(
+                        on = ClassificationTopicStats(
                                 topic = topic,
                                 percentage = Double.MAX_VALUE,
                                 count = -1))

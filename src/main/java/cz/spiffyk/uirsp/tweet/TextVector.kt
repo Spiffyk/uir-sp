@@ -105,10 +105,45 @@ class TextVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Stri
     }
 
 
+    override fun iterator(): Iterator<Map.Entry<String, Double>> {
+        return map.iterator()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TextVector
+
+        if (map != other.map) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return map.hashCode()
+    }
+
+    override fun toString(): String {
+        return map.toString()
+    }
+
+
 
     /**
-     * Gets a value for the specified word.
+     * Combines keys of the word vector and another word vector and returns them in a [Set].
+     *
+     * @return [Set] of keys
      */
+    private fun getKeySet(v: TextVector): Set<String> {
+        val keySet = mutableSetOf<String>()
+        keySet.addAll(map.keys)
+        keySet.addAll(v.map.keys)
+        return keySet
+    }
+
+
+
     operator fun get(word: String): Double {
         return map[word] ?: 0.0
     }
@@ -160,43 +195,6 @@ class TextVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Stri
     operator fun div(x: Int): TextVector = this / x.toDouble()
 
 
-    override fun iterator(): Iterator<Map.Entry<String, Double>> {
-        return map.iterator()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as TextVector
-
-        if (map != other.map) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return map.hashCode()
-    }
-
-    override fun toString(): String {
-        return map.toString()
-    }
-
-
-
-    /**
-     * Combines keys of the word vector and another word vector and returns them in a [Set].
-     *
-     * @return [Set] of keys
-     */
-    private fun getKeySet(v: TextVector): Set<String> {
-        val keySet = mutableSetOf<String>()
-        keySet.addAll(map.keys)
-        keySet.addAll(v.map.keys)
-        return keySet
-    }
-
 
     /**
      * Builder class of [TextVector].
@@ -215,6 +213,11 @@ class TextVector(inputMap: MutableMap<String, Double>) : Iterable<Map.Entry<Stri
             return this
         }
 
+        /**
+         * Adds the specified text vector to the [TextVector] to be built.
+         *
+         * @param textVector the text vector to add
+         */
         fun add(textVector: TextVector): Builder {
             textVector.forEach {
                 add(it.key, it.value)

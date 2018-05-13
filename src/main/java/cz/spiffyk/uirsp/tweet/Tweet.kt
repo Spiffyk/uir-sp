@@ -19,10 +19,16 @@ data class Tweet(val id: BigInteger,
                  val body: String) {
 
     companion object {
-        const val GLOBAL_FILTER_DISABLE: Boolean = false
 
+        /**
+         * A RegEx of characters that get trimmed from the beginning and the end of individual words in a tweet while
+         * pre-processing.
+         */
         private const val TRIMMED_CHARS = """[^\wáéíýóúůžščřďťňě#@]*"""
 
+        /**
+         * Meaningless words that get filtered out while generating single-word vectors.
+         */
         private val FILTERED_WORDS = setOf(
                 /*
                  * Czech prepositions
@@ -58,6 +64,9 @@ data class Tweet(val id: BigInteger,
                 "toto", "tuten", "tvůj", "ty", "tyto", "týž", "váš", "vešker", "veškerý", "von", "vše", "všecek",
                 "všechen", "všechno", "všeliký", "vy", "žádný")
 
+        /**
+         * A predicate that filters out words in single-word vectors.
+         */
         private val wordFilter: (String) -> Boolean = {
             when {
                 (it.length <= 1) -> {
@@ -70,7 +79,12 @@ data class Tweet(val id: BigInteger,
     }
 
 
-
+    /**
+     * Splits the body of the tweet into individual words.
+     *
+     * @param applyFilter whether meaningless words should be filtered out
+     * @return a list of individual words
+     */
     fun splitWords(applyFilter: Boolean = true): List<String> {
         val firstColon = this.body.indexOf(':')
         val rawBody = when {
@@ -87,12 +101,15 @@ data class Tweet(val id: BigInteger,
                     .replace(Regex("""$TRIMMED_CHARS$"""), "")
         }
 
-        return when (!GLOBAL_FILTER_DISABLE && applyFilter) {
+        return when (applyFilter) {
             true -> splitStream.filter(wordFilter)
             false -> splitStream
         }
     }
 
+    /**
+     * Gets a CSV representation of the tweet in the format [TweetsCsvParser] can read.
+     */
     fun toCsv(): String {
         val isEvent = when (topic) {
             Topic.NONE -> 0

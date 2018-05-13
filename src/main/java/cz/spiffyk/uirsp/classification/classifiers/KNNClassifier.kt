@@ -13,13 +13,18 @@ import kotlin.collections.HashSet
 
 object KNNClassifier {
 
-    private val TOPIC_COUNT = Topic.values().size
     private val RANDOM = Random()
 
+    /**
+     * Classifies the pre-processed tweets.
+     *
+     * @param preprocessResult the result of a pre-process
+     * @param teacherRatio the ratio of tweets to be used as a teacher
+     */
     fun classify(preprocessResult: PreprocessResult,
                  teacherRatio: Double,
                  k: Int): ClassificationResult {
-        if ((preprocessResult.tweets.size * teacherRatio) < TOPIC_COUNT) {
+        if ((preprocessResult.tweets.size * teacherRatio) < Topic.values().size) {
             throw IllegalStateException("Too small teacher ratio!")
         }
 
@@ -33,7 +38,6 @@ object KNNClassifier {
             resultMap.forEach { topic, potentialNeighbors ->
                 potentialNeighbors.forEach { potentialNeighbor ->
                     neighbors.add(Neighbor(
-                            neighbor = potentialNeighbor,
                             topic = topic,
                             distance = TextVector.dist(tweetWithVector.vector, potentialNeighbor.vector)))
                 }
@@ -73,6 +77,9 @@ object KNNClassifier {
         })
     }
 
+    /**
+     * Generates starting groups of tweets.
+     */
     private fun teach(tweets: MutableSet<TweetWithVector>,
                       teacherRatio: Double,
                       random: Random = RANDOM): Map<Topic, ArrayList<TweetWithVector>> {
@@ -88,14 +95,14 @@ object KNNClassifier {
         }
 
         var remainingTeachers = (tweets.size * teacherRatio).toInt()
-        var remainingTopics = TOPIC_COUNT
+        var remainingTopics = Topic.values().size
 
-        for (i in 0..(TOPIC_COUNT - 1)) {
+        for (i in 0..(Topic.values().size - 1)) {
             val topic = Topic.values()[i]
 
             remainingTopics--
             val noOfTeachers = when (i) {
-                (TOPIC_COUNT - 1) -> remainingTeachers
+                (Topic.values().size - 1) -> remainingTeachers
                 else -> 1 + random.nextInt(remainingTeachers - remainingTopics)
             }
 
@@ -117,8 +124,9 @@ object KNNClassifier {
         return resultMap
     }
 
-    private class Neighbor(val neighbor: TweetWithVector,
-                           val topic: Topic,
+
+
+    private class Neighbor(val topic: Topic,
                            val distance: Double): Comparable<Neighbor> {
 
         override fun compareTo(other: Neighbor): Int = this.distance.compareTo(other.distance)

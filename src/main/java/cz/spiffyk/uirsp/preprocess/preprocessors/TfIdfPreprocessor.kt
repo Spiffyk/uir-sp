@@ -5,9 +5,17 @@ import cz.spiffyk.uirsp.tweet.Tweet
 import cz.spiffyk.uirsp.tweet.TextVector
 import cz.spiffyk.uirsp.tweet.TweetWithVector
 
+/**
+ * A tf-idf pre-processor object.
+ */
 object TfIdfPreprocessor {
 
-    fun preprocess(tweets: List<Tweet>): PreprocessResult {
+    /**
+     * Preprocesses a [Collection] of [Tweet]s and creates a new [PreprocessResult].
+     *
+     * @param tweets the [Tweet]s to pre-process
+     */
+    fun preprocess(tweets: Collection<Tweet>): PreprocessResult {
         val overallCountVectorBuilder = TextVector.Builder()
         val tfVectors = ArrayList<TweetWithVector>()
         tweets.forEach {
@@ -32,6 +40,14 @@ object TfIdfPreprocessor {
         return PreprocessResult(resultTweets, overallCountVectorBuilder.map.keys)
     }
 
+    /**
+     * Calculates an idf value [TextVector] from an overall-count [TextVector].
+     *
+     * @param ocVector the vector with counts of documents containing each of the words
+     * @param tweetCount the count of preprocessed tweets
+     *
+     * @return the calculated idf value [TextVector]
+     */
     private fun idf(ocVector: TextVector, tweetCount: Int): TextVector {
         val result = HashMap<String, Double>()
         ocVector.forEach {

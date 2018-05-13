@@ -3,10 +3,16 @@ package cz.spiffyk.uirsp.stats
 import cz.spiffyk.uirsp.classification.ClassificationResult
 import cz.spiffyk.uirsp.tweet.Topic
 
+/**
+ * An object for calculating [Stats].
+ */
 object StatsCalculator {
 
-    private val EVENT_TOPICS = Topic.values()
-
+    /**
+     * Calculates precision, recall and f-measure values for the specified [ClassificationResult].
+     *
+     * @param classificationResult the [ClassificationResult] to operate on
+     */
     fun calculate(classificationResult: ClassificationResult): Stats {
         val relevantMap = HashMap<Topic, Int>()
         val retrievedMap = HashMap<Topic, Int>()
@@ -24,7 +30,7 @@ object StatsCalculator {
         }
 
         val topicStats = HashMap<Topic, Stats.StatsUnit>()
-        EVENT_TOPICS.forEach { topic ->
+        Topic.values().forEach { topic ->
             val relevant = relevantMap[topic] ?: 0
             val retrieved = retrievedMap[topic] ?: 0
             val actual = actualMap[topic] ?: 0
@@ -58,9 +64,9 @@ object StatsCalculator {
         }
 
         val meanStats = Stats.StatsUnit(
-                precision = mPrecision / EVENT_TOPICS.size,
-                recall = mRecall / EVENT_TOPICS.size,
-                fMeasure = mFMeasure / EVENT_TOPICS.size)
+                precision = mPrecision / Topic.values().size,
+                recall = mRecall / Topic.values().size,
+                fMeasure = mFMeasure / Topic.values().size)
 
         return Stats(topicStats, meanStats)
     }

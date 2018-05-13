@@ -45,7 +45,6 @@ data class Arguments(val inputFile: File,
          * Parses command line arguments into a [Arguments] object.
          *
          * @param args Command line arguments as passed to a `main(args: Array<String>)` entry point
-         *
          * @return an [Arguments] object parsed from CLI arguments or `null` if `--help` or `-h` was found
          *
          * @throws InvalidArgsException when command line arguments are invalid
@@ -171,6 +170,8 @@ data class Arguments(val inputFile: File,
                     teacherRatio = teacherRatio)
         }
     }
+
+
 
     enum class PreprocessorType(val code: String) {
         BAG_OF_WORDS("bow"),

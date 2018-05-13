@@ -44,7 +44,6 @@ fun main(rawArgs: Array<String>) {
         val preprocessStart = System.currentTimeMillis()
         val preprocessResult: PreprocessResult = preprocess(tweets, args.preprocessorType)
         val preprocessEnd = System.currentTimeMillis()
-
         println(" done (in ${String.format("%.3f", (preprocessEnd - preprocessStart) * 0.001)} s)")
 
         print("Classifying...")
@@ -57,14 +56,11 @@ fun main(rawArgs: Array<String>) {
         val classificationEnd = System.currentTimeMillis()
         println(" done (in ${String.format("%.3f", (classificationEnd - classificationStart) * 0.001)} s)")
 
-        if (args.outputDir.exists() && !args.outputDir.isDirectory) {
-            throw IllegalStateException("Output path exists and is not a directory!")
-        }
-
-        args.outputDir.deleteRecursively()
-        args.outputDir.mkdirs()
-
+        print("Saving...")
+        val saveStart = System.currentTimeMillis()
         save(classificationResult, args.outputDir)
+        val saveEnd = System.currentTimeMillis()
+        println(" done (in ${String.format("%.3f", (saveEnd - saveStart) * 0.001)} s)")
 
     } catch (e: Arguments.InvalidArgsException) {
         println("${e.javaClass.simpleName}: ${e.message}")
@@ -73,6 +69,9 @@ fun main(rawArgs: Array<String>) {
     }
 }
 
+/**
+ * Starts preprocessing.
+ */
 private fun preprocess(tweets: List<Tweet>, preprocessorType: Arguments.PreprocessorType): PreprocessResult =
         when(preprocessorType) {
             Arguments.PreprocessorType.BAG_OF_WORDS ->
@@ -83,6 +82,9 @@ private fun preprocess(tweets: List<Tweet>, preprocessorType: Arguments.Preproce
                 TfIdfPreprocessor.preprocess(tweets)
         }
 
+/**
+ * Starts classification.
+ */
 private fun classify(preprocessResult: PreprocessResult,
                      classifierType: Arguments.ClassifierType,
                      teacherRatio: Double,
@@ -92,12 +94,30 @@ private fun classify(preprocessResult: PreprocessResult,
             Arguments.ClassifierType.K_NN -> KNNClassifier.classify(preprocessResult, teacherRatio, k)
         }
 
+/**
+ * Saves a program result into the specified directory.
+ *
+ * @param classificationResult the [ClassificationResult] to save
+ * @param outputDir the target directory
+ */
 private fun save(classificationResult: ClassificationResult,
                  outputDir: File) {
+    if (outputDir.exists() && !outputDir.isDirectory) {
+        throw IllegalStateException("Output path exists and is not a directory!")
+    }
+    outputDir.deleteRecursively()
+    outputDir.mkdirs()
+
     saveTweets(classificationResult, outputDir)
     saveStats(classificationResult, outputDir)
 }
 
+/**
+ * Saves tweets in CSV files separated by their detected topics.
+ *
+ * @param classificationResult the [ClassificationResult] to get the data from
+ * @param outputDir the directory to saves the file into
+ */
 private fun saveTweets(classificationResult: ClassificationResult,
                        outputDir: File) {
 
@@ -112,6 +132,12 @@ private fun saveTweets(classificationResult: ClassificationResult,
     }
 }
 
+/**
+ * Saves precisions, recalls and f-measures of a [ClassificationResult] into a human-readable plain-text file.
+ *
+ * @param classificationResult the [ClassificationResult] to get the data from
+ * @param outputDir the directory to save the file into
+ */
 private fun saveStats(classificationResult: ClassificationResult,
                       outputDir: File) {
     val out = File(outputDir, OUTPUT_STATS_FILENAME).printWriter()
