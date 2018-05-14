@@ -18,6 +18,8 @@ const val STATUS_HELP: Int = 255
 const val STATUS_INVALID_ARGS: Int = 1
 
 const val OUTPUT_STATS_FILENAME = "stats.txt"
+const val OUTPUT_ARGS_FILENAME = "config.txt"
+const val OUTPUT_TIMES_FILENAME = "times.txt"
 const val OUTPUT_TWEETS_FILE_EXT = ".csv"
 
 /**
@@ -38,13 +40,15 @@ fun main(rawArgs: Array<String>) {
         val parseStart = System.currentTimeMillis()
         val tweets = TweetsCsvParser.parseFile(args.inputFile)
         val parseEnd = System.currentTimeMillis()
-        println(" done (${tweets.size} tweets in ${String.format("%.3f", (parseEnd - parseStart) * 0.001)} s)")
+        val parseTime = (parseEnd - parseStart) * 0.001
+        println(" done (${tweets.size} tweets in ${String.format("%.3f", parseTime)} s)")
 
         print("Preprocessing...")
         val preprocessStart = System.currentTimeMillis()
         val preprocessResult: PreprocessResult = preprocess(tweets, args.preprocessorType)
         val preprocessEnd = System.currentTimeMillis()
-        println(" done (in ${String.format("%.3f", (preprocessEnd - preprocessStart) * 0.001)} s)")
+        val preprocessTime = (preprocessEnd - preprocessStart) * 0.001
+        println(" done (in ${String.format("%.3f", preprocessTime)} s)")
 
         print("Classifying...")
         val classificationStart = System.currentTimeMillis()
@@ -54,11 +58,16 @@ fun main(rawArgs: Array<String>) {
                 args.teacherRatio,
                 args.k)
         val classificationEnd = System.currentTimeMillis()
-        println(" done (in ${String.format("%.3f", (classificationEnd - classificationStart) * 0.001)} s)")
+        val classificationTime = (classificationEnd - classificationStart) * 0.001
+        println(" done (in ${String.format("%.3f", classificationTime)} s)")
 
         print("Saving...")
         val saveStart = System.currentTimeMillis()
-        save(classificationResult, args.outputDir)
+        save(
+                args = args,
+                classificationResult = classificationResult,
+                times = Times(parseTime, preprocessTime, classificationTime),
+                outputDir = args.outputDir)
         val saveEnd = System.currentTimeMillis()
         println(" done (in ${String.format("%.3f", (saveEnd - saveStart) * 0.001)} s)")
 
@@ -97,10 +106,13 @@ private fun classify(preprocessResult: PreprocessResult,
 /**
  * Saves a program result into the specified directory.
  *
+ * @param args parsed command line [Arguments]
  * @param classificationResult the [ClassificationResult] to save
  * @param outputDir the target directory
  */
-private fun save(classificationResult: ClassificationResult,
+private fun save(args: Arguments,
+                 classificationResult: ClassificationResult,
+                 times: Times,
                  outputDir: File) {
     if (outputDir.exists() && !outputDir.isDirectory) {
         throw IllegalStateException("Output path exists and is not a directory!")
@@ -108,8 +120,10 @@ private fun save(classificationResult: ClassificationResult,
     outputDir.deleteRecursively()
     outputDir.mkdirs()
 
-    saveTweets(classificationResult, outputDir)
+    saveArgs(args, outputDir)
     saveStats(classificationResult, outputDir)
+    saveTimes(times, outputDir)
+    saveTweets(classificationResult, outputDir)
 }
 
 /**
@@ -122,7 +136,7 @@ private fun saveTweets(classificationResult: ClassificationResult,
                        outputDir: File) {
 
     classificationResult.resultGroups.forEach { topic, group ->
-        val out = File(outputDir, "${topic.code}-${topic.name.toLowerCase()}$OUTPUT_TWEETS_FILE_EXT").printWriter()
+        val out = File(outputDir, "${topic.name}$OUTPUT_TWEETS_FILE_EXT").printWriter()
 
         group.tweets.forEach {  tweet ->
             out.println(tweet.toCsv())
@@ -133,7 +147,7 @@ private fun saveTweets(classificationResult: ClassificationResult,
 }
 
 /**
- * Saves precisions, recalls and f-measures of a [ClassificationResult] into a human-readable plain-text file.
+ * Saves precisions, recalls and f-measures of a [ClassificationResult] into a human-readable text file.
  *
  * @param classificationResult the [ClassificationResult] to get the data from
  * @param outputDir the directory to save the file into
@@ -155,4 +169,40 @@ private fun saveStats(classificationResult: ClassificationResult,
             "\tf-measure: ${stats.mean.fMeasure}\n")
 
     out.close()
+}
+
+/**
+ * Saves arguments in a human-readable text file.
+ *
+ * @param args command line [Arguments]
+ * @param outputDir the directory to save the file into
+ */
+private fun saveArgs(args: Arguments,
+                     outputDir: File) {
+    val out = File(outputDir, OUTPUT_ARGS_FILENAME).printWriter()
+    out.println(args.toReadableString())
+    out.close()
+}
+
+/**
+ * Saves times in a human-readable text file.
+ *
+ * @param times process [Times]
+ * @param outputDir the directory to save the file into
+ */
+private fun saveTimes(times: Times,
+                      outputDir: File) {
+    val out = File(outputDir, OUTPUT_TIMES_FILENAME).printWriter()
+    out.println(times.toReadableString())
+    out.close()
+}
+
+private data class Times(val parseTime: Double,
+                         val preprocessTime: Double,
+                         val classificationTime: Double) {
+    fun toReadableString(): String {
+        return "parse time: $parseTime seconds\n" +
+                "preprocess time: $preprocessTime seconds\n" +
+                "classification time: $classificationTime seconds"
+    }
 }

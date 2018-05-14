@@ -171,6 +171,26 @@ data class Arguments(val inputFile: File,
         }
     }
 
+    fun toReadableString(): String {
+        val sb = StringBuilder()
+
+        sb.append("input file: ${inputFile.absolutePath}\n")
+        sb.append("output directory: ${outputDir.absolutePath}\n")
+        sb.append("preprocessor algorithm: ${preprocessorType.code}")
+        if (preprocessorType === PreprocessorType.N_GRAM) {
+            sb.append(" n = $n")
+        }
+        sb.append('\n')
+        sb.append("classifier algorithm: ${classifierType.code}")
+        if (classifierType === ClassifierType.K_NN) {
+            sb.append(" k = $k")
+        }
+        sb.append("\n")
+        sb.append("teacher ratio: $teacherRatio")
+
+        return sb.toString()
+    }
+
 
 
     enum class PreprocessorType(val code: String) {
