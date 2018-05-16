@@ -11,11 +11,13 @@ import cz.spiffyk.uirsp.stats.StatsCalculator
 import cz.spiffyk.uirsp.tweet.Tweet
 import cz.spiffyk.uirsp.tweet.TweetsCsvParser
 import cz.spiffyk.uirsp.util.Arguments
+import cz.spiffyk.uirsp.util.printMessagesRecursively
 import java.io.File
 import kotlin.system.exitProcess
 
 const val STATUS_HELP: Int = 255
 const val STATUS_INVALID_ARGS: Int = 1
+const val STATUS_PARSER_EXCEPTION: Int = 2
 
 const val OUTPUT_STATS_FILENAME = "stats.txt"
 const val OUTPUT_ARGS_FILENAME = "config.txt"
@@ -72,11 +74,17 @@ fun main(rawArgs: Array<String>) {
         println(" done (in ${String.format("%.3f", (saveEnd - saveStart) * 0.001)} s)")
 
     } catch (e: Arguments.InvalidArgsException) {
-        println("${e.javaClass.simpleName}: ${e.message}")
+        e.printMessagesRecursively()
         println(Arguments.HELP_TEXT)
         exitProcess(STATUS_INVALID_ARGS)
+    } catch (e: TweetsCsvParser.ParserException) {
+        println()
+        e.printMessagesRecursively()
+        exitProcess(STATUS_PARSER_EXCEPTION)
     }
 }
+
+
 
 /**
  * Starts preprocessing.
@@ -196,6 +204,8 @@ private fun saveTimes(times: Times,
     out.println(times.toReadableString())
     out.close()
 }
+
+
 
 private data class Times(val parseTime: Double,
                          val preprocessTime: Double,
